@@ -61,6 +61,8 @@ export class ExecuteOrderUseCase {
       stockId,
     );
 
+    const existed = !!portfolio;
+
     if (!portfolio) {
       portfolio = new Portfolio(userId, stockId, 0, 0);
     }
@@ -68,6 +70,10 @@ export class ExecuteOrderUseCase {
     if (type === OrderType.BUY) {
       portfolio.addStocks(quantity, price);
     } else {
+      // If portfolio did not exist, there's nothing to remove -> ignore
+      if (!existed) {
+        return;
+      }
       portfolio.removeStocks(quantity);
     }
 

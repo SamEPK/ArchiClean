@@ -27,6 +27,7 @@ LoginUser
 CreateAccount
 Répartition des tâches - Projet Banque AVENIR
 
+
 Quentin — Module Administration & Services bancaires (implémentation minimale ajoutée)
 
 Fonctionnalités implémentées (minimum requis):
@@ -35,15 +36,46 @@ Fonctionnalités implémentées (minimum requis):
 - Calcul mensualité (utilitaire pour crédit)
 - Messagerie: envoi de message, création conversation, assignation et transfert (in-memory)
 
-Fichiers ajoutés:
-- src/domain/entities/BankDirector.ts (entité)
-- src/domain/entities/Advisor.ts (entité)
-- src/domain/entities/Credit.ts (entité)
-- src/domain/entities/Message.ts (entité)
-- src/domain/entities/Conversation.ts (entité)
-- src/domain/repositories/IAdminRepository.ts (interface)
-- src/domain/repositories/ICreditRepository.ts (interface)
-- src/domain/repositories/IMessageRepository.ts (interface)
+Endpoints (controllers NestJS minimal) — exemples d'usage PowerShell:
+
+- Admin - register
+	POST /admin/register
+	Body: { id, email, password, firstName, lastName }
+
+	Exemple PowerShell:
+	Invoke-RestMethod -Method Post -Uri http://localhost:3000/admin/register -Body (@{ id='d1'; email='d@a.com'; password='pwd'; firstName='Dir'; lastName='E' } | ConvertTo-Json) -ContentType 'application/json'
+
+- Admin - login
+	POST /admin/login
+	Body: { email, password }
+
+	Exemple PowerShell:
+	Invoke-RestMethod -Method Post -Uri http://localhost:3000/admin/login -Body (@{ email='d@a.com'; password='pwd' } | ConvertTo-Json) -ContentType 'application/json'
+
+- Messaging - send message
+	POST /messaging/send
+	Body: { conversationId, senderId, content }
+
+- Messaging - assign
+	POST /messaging/assign
+	Body: { convId, advisorId }
+
+- Messaging - transfer
+	POST /messaging/transfer
+	Body: { convId, fromAdvisorId, toAdvisorId }
+
+- Messaging - list open
+	GET /messaging/open
+
+Fichiers ajoutés (rappel):
+- src/domain/entities/BankDirector.ts
+- src/domain/entities/Advisor.ts
+- src/domain/entities/Credit.ts
+- src/domain/entities/Message.ts
+- src/domain/entities/Conversation.ts
+- src/domain/repositories/IAdminRepository.ts
+- src/domain/repositories/ICreditRepository.ts
+- src/domain/repositories/IMessageRepository.ts
 - src/infrastructure/repositories/in-memory/InMemoryAdminRepository.ts
 - src/infrastructure/repositories/in-memory/InMemoryCreditRepository.ts
 - src/infrastructure/repositories/in-memory/InMemoryMessageRepository.ts
@@ -53,14 +85,20 @@ Fichiers ajoutés:
 - src/application/use-cases/SendMessage.ts
 - src/application/use-cases/AssignConversation.ts
 - src/application/use-cases/TransferConversation.ts
-- src/interface/nestjs/modules/admin.module.ts (module minimal)
-- src/interface/nestjs/controllers/admin.controller.ts (endpoints register/login)
-- src/interface/nestjs/controllers/messaging.controller.ts (endpoints send/assign/transfer/open)
+- src/interface/nestjs/modules/admin.module.ts
+- src/interface/nestjs/controllers/admin.controller.ts
+- src/interface/nestjs/controllers/messaging.controller.ts
 
-Notes:
-- Implémentation volontairement minimale et indépendante des dépendances externes.
-- Hash utilisé pour mot de passe: fonction simple non sécurisée (remplacer par bcrypt en production).
+How to run tests (dev)
+- Installer dépendances dev (si nécessaire):
+	npm install --save-dev jest ts-jest @types/jest
+- Lancer la suite de tests:
+	npm test
 
-Pour tester rapidement (dev): lancer NestJS ou importer manuellement les classes et appeler les use-cases.
+Notes techniques et prochains pas recommandés:
+- Remplacer le hash simple dans `AuthenticateDirector` par `bcrypt` pour la production.
+- Ajouter un adaptateur MongoDB/SQL (Mongo*Repository / SQL*Repository) si tu veux persistance réelle.
+- Intégrer les controllers dans un bootstrap NestJS (`src/interface/nestjs/main.ts`) pour démarrer localement.
+- Ajouter Swagger / OpenAPI pour documenter les endpoints.
 
---- Fin de la partie Quentin (implémentation ajoutée)
+--- Fin de la partie Quentin (détails techniques ajoutés)

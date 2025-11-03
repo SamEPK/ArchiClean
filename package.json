@@ -40,11 +40,14 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-fastify": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.20",
     "@nestjs/swagger": "^7.0.0",
+    "@nestjs/websockets": "^10.4.20",
     "bcryptjs": "^3.0.2",
     "fastify": "^4.20.0",
     "mongoose": "^7.3.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(client): add Client and BankAccount domain entities\n\n- Add Client entity with email confirmation system\n- Add BankAccount entity with IBAN generation (Mod-97 SEPA)\n- Add IClientRepository interface\n- Add IBankAccountRepository interface\n- Implement email confirmation token with 24h expiration\n- Implement IBAN validation and generation algorithm\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(client): add authentication use cases\n\n- Add RegisterClientUseCase with email validation and password hashing\n- Add ConfirmEmailUseCase with token validation\n- Add AuthenticateClientUseCase with bcrypt verification\n- Implement email confirmation workflow\n- Add password strength validation (8+ chars, uppercase, lowercase, numbers)\n- Implement secure token generation and expiration\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(client): add bank account management use cases\n\n- Add CreateBankAccountUseCase with automatic IBAN generation\n- Add DeleteBankAccountUseCase with balance protection\n- Add UpdateBankAccountNameUseCase with ownership verification\n- Add ListBankAccountsUseCase with active/inactive filtering\n- Implement IBAN uniqueness check\n- Add account ownership validation for all operations\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { TransferFundsCommand } from '../commands/TransferFundsCommand';
 import { TransferFundsUseCase } from '@application/use-cases/TransferFundsUseCase';
 import { DomainEvent, EVENT_STORE } from '@domain/events/DomainEvent';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 import { Inject } from '@nestjs/common';
 
 @CommandHandler(TransferFundsCommand)

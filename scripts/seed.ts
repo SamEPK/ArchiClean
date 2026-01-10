@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '../src/infrastructure/utils/uuid-helper';
 import { User, UserRole } from '../src/domain/entities/User';
 import { UserModel } from '../src/infrastructure/repositories/mongodb/UserModel';
 import { HashService } from '../src/infrastructure/services/HashService';

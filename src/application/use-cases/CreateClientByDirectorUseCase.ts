@@ -1,6 +1,6 @@
 import { Client } from '../../domain/entities/Client';
 import { IClientRepository } from '../../domain/repositories/IClientRepository';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 import * as bcrypt from 'bcryptjs';
 
 export class CreateClientByDirectorUseCase {

@@ -3,7 +3,7 @@ import { Stock } from '../../domain/entities/Stock';
 import { HashService } from '../services/HashService';
 import { InMemoryUserRepository } from '../repositories/in-memory/InMemoryUserRepository';
 import { InMemoryStockRepository } from '../repositories/in-memory/InMemoryStockRepository';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '../utils/uuid-helper';
 
 /**
  * Script de seed pour initialiser la base de données avec des données de test

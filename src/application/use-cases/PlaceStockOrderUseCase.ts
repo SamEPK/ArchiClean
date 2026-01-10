@@ -4,7 +4,7 @@ import { IOrderRepository } from '@domain/repositories/IOrderRepository';
 import { IStockRepository } from '@domain/repositories/IStockRepository';
 import { IBankAccountRepository } from '@domain/repositories/IBankAccountRepository';
 import { ITransactionRepository } from '@domain/repositories/ITransactionRepository';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 export interface PlaceStockOrderRequest {
   userId: string;

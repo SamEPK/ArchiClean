@@ -5,7 +5,7 @@ import { GetCreditScheduleUseCase } from '@application/use-cases/GetCreditSchedu
 import { GrantCredit } from '@application/use-cases/GrantCredit';
 import { Credit } from '@domain/entities/Credit';
 import { RepositoryFactory } from '@infrastructure/repositories/RepositoryFactory';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 const factory = RepositoryFactory.getInstance();
 

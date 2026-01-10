@@ -1,7 +1,7 @@
 import { Advisor } from '../../domain/entities/Advisor';
 import { IAdvisorRepository } from '../../domain/repositories/IAdvisorRepository';
 import * as bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 export class RegisterAdvisorUseCase {
   constructor(private advisorRepository: IAdvisorRepository) {}

@@ -1,6 +1,6 @@
 import { Stock } from '../../domain/entities/Stock';
 import { IStockRepository } from '../../domain/repositories/IStockRepository';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 export class CreateStockUseCase {
   constructor(private stockRepository: IStockRepository) {}

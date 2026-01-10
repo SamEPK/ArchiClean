@@ -5,7 +5,7 @@ import { IPortfolioRepository } from '@domain/repositories/IPortfolioRepository'
 import { IBankAccountRepository } from '@domain/repositories/IBankAccountRepository';
 import { ITransactionRepository } from '@domain/repositories/ITransactionRepository';
 import { Portfolio } from '@domain/entities/Portfolio';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 export interface ExecuteOrderRequest {
   orderId: string;

@@ -3,7 +3,7 @@ import { Stock } from '@domain/entities/Stock';
 import { HashService } from '../services/HashService';
 import { IUserRepository } from '@domain/repositories/IUserRepository';
 import { IStockRepository } from '@domain/repositories/IStockRepository';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 /**
  * Initialise les données de démarrage dans les repositories fournis

@@ -3,7 +3,7 @@ import { GrantCreditCommand } from '../commands/GrantCreditCommand';
 import { GrantCredit } from '@application/use-cases/GrantCredit';
 import { Credit } from '@domain/entities/Credit';
 import { DomainEvent, EVENT_STORE } from '@domain/events/DomainEvent';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 import { Inject } from '@nestjs/common';
 
 @CommandHandler(GrantCreditCommand)

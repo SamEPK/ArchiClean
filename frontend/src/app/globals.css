@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 31, 41, 55;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  --font-inter: 'Inter', sans-serif;
+  --font-lexend: 'Lexend', sans-serif;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: white;
+  min-height: 100vh;
+  font-family: var(--font-inter);
+}
+
+@layer components {
+  .container-bank {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .btn-bank-primary {
+    @apply bg-primary-700 text-white hover:bg-primary-800 font-semibold py-3 px-6 rounded shadow-sm transition-colors duration-200;
+  }
+
+  .btn-bank-secondary {
+    @apply bg-white text-primary-700 border border-primary-700 hover:bg-gray-50 font-semibold py-3 px-6 rounded shadow-sm transition-colors duration-200;
+  }
+
+  .card-bank {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+

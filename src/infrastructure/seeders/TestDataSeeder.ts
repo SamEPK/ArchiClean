@@ -11,7 +11,7 @@ import { IClientRepository } from '@domain/repositories/IClientRepository';
 import { IAdvisorRepository } from '@domain/repositories/IAdvisorRepository';
 import { IMessageRepository } from '@domain/repositories/IMessageRepository';
 import * as bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 /**
  * Seeder pour créer des comptes de test au démarrage du serveur

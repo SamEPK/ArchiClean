@@ -2,7 +2,7 @@ import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { User, UserRole } from '../../domain/entities/User';
 import { HashService } from '../../infrastructure/services/HashService';
 import { EmailService } from '../../infrastructure/services/EmailService';
-import { v4 as uuidv4 } from 'uuid';
+import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
 /**
  * DTO (Data Transfer Object) pour l'inscription d'un utilisateur

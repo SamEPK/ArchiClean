@@ -2,9 +2,17 @@ import { IClientRepository } from '@domain/repositories/IClientRepository';
 import { Client } from '@domain/entities/Client';
 
 export class InMemoryClientRepository implements IClientRepository {
+  private static instanceCount = 0;
+  private instanceId: number;
   private clients: Map<string, Client> = new Map();
 
+  constructor() {
+    this.instanceId = ++InMemoryClientRepository.instanceCount;
+    console.log(`[InMemoryClientRepository] Instance #${this.instanceId} created`);
+  }
+
   async create(client: Client): Promise<void> {
+    console.log(`[InMemoryClientRepository #${this.instanceId}] Creating client: ${client.email}`);
     this.clients.set(client.id, client);
   }
 
@@ -13,6 +21,7 @@ export class InMemoryClientRepository implements IClientRepository {
   }
 
   async findByEmail(email: string): Promise<Client | null> {
+    console.log(`[InMemoryClientRepository #${this.instanceId}] findByEmail(${email}) - has ${this.clients.size} clients`);
     for (const client of this.clients.values()) {
       if (client.email.toLowerCase() === email.toLowerCase()) {
         return client;
@@ -42,6 +51,7 @@ export class InMemoryClientRepository implements IClientRepository {
   }
 
   async findAll(): Promise<Client[]> {
+    console.log(`[InMemoryClientRepository #${this.instanceId}] findAll() - has ${this.clients.size} clients`);
     return Array.from(this.clients.values());
   }
 

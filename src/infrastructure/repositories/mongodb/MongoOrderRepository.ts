@@ -4,6 +4,7 @@ import { IOrderRepository } from '@domain/repositories/IOrderRepository';
 
 interface OrderDocument extends Document {
   userId: string;
+  accountId?: string;
   stockId: string;
   type: OrderType;
   quantity: number;
@@ -15,6 +16,7 @@ interface OrderDocument extends Document {
 
 const OrderSchema = new Schema<OrderDocument>({
   userId: { type: String, required: true },
+  accountId: { type: String },
   stockId: { type: String, required: true },
   type: { type: String, enum: Object.values(OrderType), required: true },
   quantity: { type: Number, required: true },
@@ -38,6 +40,7 @@ export class MongoOrderRepository implements IOrderRepository {
       doc.status,
       doc.createdAt,
       doc.executedAt,
+      doc.accountId,
     );
   }
 
@@ -46,6 +49,7 @@ export class MongoOrderRepository implements IOrderRepository {
       _id: order.id,
       userId: order.userId,
       stockId: order.stockId,
+      accountId: order.accountId,
       type: order.type,
       quantity: order.quantity,
       price: order.price,

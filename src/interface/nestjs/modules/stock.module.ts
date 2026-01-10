@@ -1,16 +1,19 @@
 import { Module } from '@nestjs/common';
 import { StockController } from '../controllers/stock.controller';
-import { InMemoryStockRepository } from '@infrastructure/repositories/in-memory/InMemoryStockRepository';
+import { RepositoriesModule, STOCK_REPOSITORY } from './repositories.module';
 
-const stockRepo = new InMemoryStockRepository();
+console.log('[StockModule] Using SINGLETON stock repository from RepositoriesModule');
 
 @Module({
+  imports: [RepositoriesModule],
   controllers: [StockController],
   providers: [
     {
       provide: 'IStockRepository',
-      useValue: stockRepo,
+      useFactory: (stockRepository) => stockRepository,
+      inject: [STOCK_REPOSITORY],
     },
   ],
+  exports: ['IStockRepository'],
 })
 export class StockModule {}

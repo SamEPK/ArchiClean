@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Toggle - ArchiClean</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-bottom: 40px;
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .panel h2 {
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      padding-bottom: 10px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .status-card {
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .status-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .status-card h3 {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .status-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .status-value.inmemory {
+      color: #fbbf24;
+    }
+
+    .status-value.mongodb {
+      color: #10b981;
+    }
+
+    .status-value.nestjs {
+      color: #e0234e;
+    }
+
+    .status-value.fastify {
+      color: #38bdf8;
+    }
+
+    .toggle-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .db-toggle {
+      position: relative;
+      width: 200px;
+      height: 60px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .db-toggle.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #10b981;
+    }
+
+    .db-toggle-slider {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 90px;
+      height: 48px;
+      background: white;
+      border-radius: 24px;
+      transition: transform 0.3s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #667eea;
+      font-size: 0.9rem;
+    }
+
+    .db-toggle.active .db-toggle-slider {
+      transform: translateX(100px);
+      color: #10b981;
+    }
+
+    .db-label {
+      font-size: 1.2rem;
+      font-weight: bold;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .log-container {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      padding: 5px;
+      border-left: 3px solid rgba(255,255,255,0.3);
+      padding-left: 10px;
+    }
+
+    .log-entry.success {
+      border-left-color: #10b981;
+      color: #6ee7b7;
+    }
+
+    .log-entry.error {
+      border-left-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    .log-entry.info {
+      border-left-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    .log-entry.warning {
+      border-left-color: #f59e0b;
+      color: #fcd34d;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .backend-api-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .backend-btn {
+      padding: 10px 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .backend-btn.active {
+      background: rgba(255,255,255,0.3);
+      border-color: white;
+      transform: scale(1.05);
+    }
+
+    .backend-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .info-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Database Toggle System</h1>
+    <p class="subtitle">Basculez dynamiquement entre InMemory et MongoDB</p>
+
+    <!-- Backend API Selection -->
+    <div class="panel">
+      <h2>🎯 Sélection de l'API Backend</h2>
+      <div class="backend-api-toggle">
+        <button class="backend-btn active" id="btnNestJS" onclick="selectBackend('nestjs')">
+          NestJS :3000
+        </button>
+        <button class="backend-btn" id="btnFastify" onclick="selectBackend('fastify')">
+          Fastify :3001
+        </button>
+      </div>
+      <p style="text-align: center; margin-top: 10px; opacity: 0.8;">
+        API actuelle: <strong id="currentApi">NestJS (http://localhost:3000)</strong>
+      </p>
+    </div>
+
+    <!-- Status Panel -->
+    <div class="panel">
+      <h2>📊 Statut Actuel</h2>
+      <div class="status-grid">
+        <div class="status-card">
+          <h3>Base de Données</h3>
+          <div class="status-value inmemory" id="currentDbType">InMemory</div>
+        </div>
+        <div class="status-card">
+          <h3>API Backend</h3>
+          <div class="status-value nestjs" id="currentBackend">NestJS</div>
+        </div>
+        <div class="status-card">
+          <h3>Statut</h3>
+          <div class="status-value" id="connectionStatus">🟢 Connecté</div>
+        </div>
+        <div class="status-card">
+          <h3>Uptime</h3>
+          <div class="status-value" id="systemUptime">--</div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="refreshStatus()">
+          🔄 Rafraîchir le Statut
+        </button>
+        <button class="btn btn-success" onclick="testConnection()">
+          🔌 Tester la Connexion
+        </button>
+      </div>
+    </div>
+
+    <!-- Toggle Panel -->
+    <div class="panel">
+      <h2>🔀 Basculer la Base de Données</h2>
+      <div class="toggle-container">
+        <div class="db-label" id="dbLabelLeft">InMemory</div>
+        <div class="db-toggle" id="dbToggle" onclick="toggleDatabase()">
+          <div class="db-toggle-slider" id="dbToggleSlider">InMemory</div>
+        </div>
+        <div class="db-label" id="dbLabelRight">MongoDB</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="switchToInMemory()">
+          💾 Basculer vers InMemory
+        </button>
+        <button class="btn btn-success" onclick="switchToMongoDB()">
+          🍃 Basculer vers MongoDB
+        </button>
+        <button class="btn btn-danger" onclick="resetDatabase()">
+          ⚠️ Réinitialiser les Repositories
+        </button>
+      </div>
+    </div>
+
+    <!-- Logs Panel -->
+    <div class="panel">
+      <h2>📜 Logs d'Activité</h2>
+      <div class="log-container" id="logContainer">
+        <div class="log-entry info">🚀 Système initialisé - En attente de commandes...</div>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="clearLogs()">
+          🗑️ Effacer les Logs
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="database-toggle.js"></script>
+</body>
+</html>

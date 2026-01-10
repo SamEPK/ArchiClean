@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchiClean Portail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --card: #111827;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #38bdf8;
+      --accent-2: #34d399;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(52, 211, 153, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    h1, h2, h3 { margin: 0; letter-spacing: -0.5px; }
+    a { color: inherit; }
+    .app { max-width: 1200px; margin: 0 auto; padding: 28px 18px 42px; display: flex; flex-direction: column; gap: 18px; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 16px 48px rgba(0,0,0,0.35); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    label { font-weight: 600; font-size: 14px; }
+    input { width: 100%; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); outline: none; }
+    button { padding: 11px 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b1120; box-shadow: 0 12px 28px rgba(56,189,248,0.35); }
+    .muted { color: var(--muted); }
+    .pill { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); font-size: 12px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    pre { background: #0a1020; border: 1px solid var(--border); border-radius: 12px; padding: 12px; overflow-x: auto; color: #e2e8f0; }
+    .success { color: var(--accent-2); }
+    .error { color: var(--danger); }
+    .section-title { display:flex; align-items:center; gap:8px; }
+    .section-title .dot { width:10px; height:10px; border-radius:50%; background: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <div class="section-title"><span class="dot"></span><h1>Portail ArchiClean</h1></div>
+      <p class="muted">Login réel (pas de mock). Renseigne tes identifiants, les requêtes partent vers l'API du serveur (même origine).</p>
+      <div class="muted">Base API: <span id="baseUrl"></span></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Client</h2>
+        <label>Email</label><input id="clientEmail" placeholder="client@example.com" />
+        <label>Mot de passe</label><input id="clientPass" type="password" placeholder="mot de passe" />
+        <div class="row">
+          <button id="btnClientLogin">Login</button>
+          <button id="btnClientRegister" style="background:linear-gradient(135deg,#22d3ee,#38bdf8);">Register</button>
+        </div>
+        <div class="muted" style="font-size:13px;">Endpoints utilisés: POST /auth/login, POST /auth/register</div>
+        <div id="clientStatus" class="muted"></div>
+      </div>
+
+      <div class="card">
+        <h2>Advisor</h2>
+        <label>Email</label><input id="advEmail" placeholder="conseiller@banque.com" />
+        <label>Mot de passe</label><input id="advPass" type="password" />
+        <button id="btnAdvLogin">Login conseiller (/advisors/login)</button>
+        <div class="muted" style="font-size:13px;">Token unique (pas de refresh). Utilisé pour routes conseiller.</div>
+        <div id="advStatus" class="muted"></div>
+      </div>
+
+      <div class="card">
+        <h2>Director</h2>
+        <label>Email</label><input id="dirEmail" placeholder="director@bank.com" />
+        <label>Mot de passe</label><input id="dirPass" type="password" />
+        <button id="btnDirLogin">Login directeur (/admin/login)</button>
+        <div class="muted" style="font-size:13px;">La route admin.login renvoie un directeur en mémoire.</div>
+        <div id="dirStatus" class="muted"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <h2>Actions rapides</h2>
+        <span class="pill">Client</span>
+        <span class="pill">Advisor</span>
+        <span class="pill">Director</span>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Profil client (/users/profile)</h3>
+          <button id="btnGetProfile">GET profil</button>
+          <pre id="profileResult">{}</pre>
+        </div>
+        <div class="card">
+          <h3>Actions dispo (/api/stocks)</h3>
+          <button id="btnListStocks">GET stocks</button>
+          <pre id="stocksResult">[]</pre>
+        </div>
+        <div class="card">
+          <h3>Conversations ouvertes (advisor)</h3>
+          <button id="btnOpenConversations">GET /advisors/conversations/open</button>
+          <pre id="convResult">[]</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Console réseau</h2>
+      <pre id="log"></pre>
+    </div>
+  </div>
+
+  <script>
+    const baseUrl = window.location.origin;
+    document.getElementById('baseUrl').textContent = baseUrl;
+
+    const logEl = document.getElementById('log');
+    const log = (msg, isError = false) => {
+      const time = new Date().toISOString();
+      logEl.textContent = `${time} ${isError ? '[ERR]' : '[OK]'} ${msg}\n` + logEl.textContent;
+    };
+
+    const state = {
+      client: { accessToken: null, refreshToken: null },
+      advisor: { token: null },
+      director: { token: null },
+    };
+
+    async function api(path, options = {}) {
+      const res = await fetch(baseUrl + path, options);
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = text; }
+      if (!res.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data));
+      return data;
+    }
+
+    // Client auth
+    document.getElementById('btnClientLogin').onclick = async () => {
+      const email = (document.getElementById('clientEmail').value || '').trim();
+      const password = document.getElementById('clientPass').value;
+      try {
+        const data = await api('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        state.client.accessToken = data.accessToken;
+        state.client.refreshToken = data.refreshToken;
+        document.getElementById('clientStatus').innerHTML = `<span class="success">Connecté</span> (${data.user.email})`;
+        log('Client login OK');
+      } catch (err) {
+        document.getElementById('clientStatus').innerHTML = `<span class="error">${err.message}</span>`;
+        log('Client login KO: ' + err.message, true);
+      }
+    };
+
+    document.getElementById('btnClientRegister').onclick = async () => {
+      const email = (document.getElementById('clientEmail').value || '').trim();
+      const password = document.getElementById('clientPass').value;
+      try {
+        const data = await api('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, firstName: 'Client', lastName: 'Test' })
+        });
+        document.getElementById('clientStatus').innerHTML = `<span class="success">Inscrit</span> (${data.user.email})`;
+        log('Client register OK');
+      } catch (err) {
+        document.getElementById('clientStatus').innerHTML = `<span class="error">${err.message}</span>`;
+        log('Client register KO: ' + err.message, true);
+      }
+    };
+
+    // Advisor auth
+    document.getElementById('btnAdvLogin').onclick = async () => {
+      const email = (document.getElementById('advEmail').value || '').trim();
+      const password = document.getElementById('advPass').value;
+      try {
+        const data = await api('/advisors/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        if (!data.token) throw new Error('Token manquant');
+        state.advisor.token = data.token;
+        document.getElementById('advStatus').innerHTML = `<span class="success">Connecté</span> (${data.advisor?.email || email})`;
+        log('Advisor login OK');
+      } catch (err) {
+        document.getElementById('advStatus').innerHTML = `<span class="error">${err.message}</span>`;
+        log('Advisor login KO: ' + err.message, true);
+      }
+    };
+
+    // Director auth (admin controller)
+    document.getElementById('btnDirLogin').onclick = async () => {
+      const email = (document.getElementById('dirEmail').value || '').trim();
+      const password = document.getElementById('dirPass').value;
+      try {
+        const data = await api('/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        if (!data.ok) throw new Error('Login failed');
+        state.director.token = 'admin-basic';
+        document.getElementById('dirStatus').innerHTML = `<span class="success">Connecté</span> (${data.director?.email || email})`;
+        log('Director login OK');
+      } catch (err) {
+        document.getElementById('dirStatus').innerHTML = `<span class="error">${err.message}</span>`;
+        log('Director login KO: ' + err.message, true);
+      }
+    };
+
+    // Actions
+    document.getElementById('btnGetProfile').onclick = async () => {
+      try {
+        const data = await api('/users/profile', {
+          headers: { Authorization: `Bearer ${state.client.accessToken || ''}` },
+        });
+        document.getElementById('profileResult').textContent = JSON.stringify(data, null, 2);
+        log('Profil récupéré');
+      } catch (err) {
+        document.getElementById('profileResult').textContent = err.message;
+        log('Profil KO: ' + err.message, true);
+      }
+    };
+
+    document.getElementById('btnListStocks').onclick = async () => {
+      try {
+        const data = await api('/api/stocks');
+        document.getElementById('stocksResult').textContent = JSON.stringify(data, null, 2);
+        log('Stocks OK');
+      } catch (err) {
+        document.getElementById('stocksResult').textContent = err.message;
+        log('Stocks KO: ' + err.message, true);
+      }
+    };
+
+    document.getElementById('btnOpenConversations').onclick = async () => {
+      try {
+        const data = await api('/advisors/conversations/open', {
+          headers: { Authorization: `Bearer ${state.advisor.token || ''}` },
+        });
+        document.getElementById('convResult').textContent = JSON.stringify(data, null, 2);
+        log('Conversations OK');
+      } catch (err) {
+        document.getElementById('convResult').textContent = err.message;
+        log('Conversations KO: ' + err.message, true);
+      }
+    };
+  </script>
+</body>
+</html>

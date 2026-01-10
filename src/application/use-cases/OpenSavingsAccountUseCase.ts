@@ -4,6 +4,7 @@ import { ISavingsAccountRepository } from '@domain/repositories/ISavingsAccountR
 export interface OpenSavingsAccountRequest {
   accountId: string;
   interestRate: number;
+  initialBalance?: number;
 }
 
 export class OpenSavingsAccountUseCase {
@@ -25,6 +26,7 @@ export class OpenSavingsAccountUseCase {
       this.generateId(),
       request.accountId,
       request.interestRate,
+      request.initialBalance ?? 0,
       new Date(),
     );
 

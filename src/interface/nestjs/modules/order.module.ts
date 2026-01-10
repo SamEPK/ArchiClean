@@ -3,37 +3,44 @@ import { OrderController } from '../controllers/order.controller';
 import { PlaceStockOrderUseCase } from '@application/use-cases/PlaceStockOrderUseCase';
 import { CalculateStockPriceUseCase } from '@application/use-cases/CalculateStockPriceUseCase';
 import { ExecuteOrderUseCase } from '@application/use-cases/ExecuteOrderUseCase';
-import { InMemoryOrderRepository } from '@infrastructure/repositories/in-memory/InMemoryOrderRepository';
-import { InMemoryStockRepository } from '@infrastructure/repositories/in-memory/InMemoryStockRepository';
-import { InMemoryPortfolioRepository } from '@infrastructure/repositories/in-memory/InMemoryPortfolioRepository';
+import { GetMyOrdersUseCase } from '@application/use-cases/GetMyOrdersUseCase';
+import {
+  RepositoriesModule,
+  ORDER_REPOSITORY,
+  STOCK_REPOSITORY,
+  PORTFOLIO_REPOSITORY,
+  BANK_ACCOUNT_REPOSITORY,
+  TRANSACTION_REPOSITORY,
+} from './repositories.module';
 
-const orderRepo = new InMemoryOrderRepository();
-const stockRepo = new InMemoryStockRepository();
-const portfolioRepo = new InMemoryPortfolioRepository();
-
-const placeStockOrderUseCase = new PlaceStockOrderUseCase(
-  orderRepo,
-  stockRepo,
-);
-
-const calculateStockPriceUseCase = new CalculateStockPriceUseCase(orderRepo);
-
-const executeOrderUseCase = new ExecuteOrderUseCase(orderRepo, portfolioRepo);
+console.log('[OrderModule] Using SINGLETON repositories from RepositoriesModule');
 
 @Module({
+  imports: [RepositoriesModule],
   controllers: [OrderController],
   providers: [
     {
       provide: 'PlaceStockOrderUseCase',
-      useValue: placeStockOrderUseCase,
+      useFactory: (orderRepository, stockRepository, bankAccountRepository, transactionRepository) =>
+        new PlaceStockOrderUseCase(orderRepository, stockRepository, bankAccountRepository, transactionRepository),
+      inject: [ORDER_REPOSITORY, STOCK_REPOSITORY, BANK_ACCOUNT_REPOSITORY, TRANSACTION_REPOSITORY],
     },
     {
       provide: 'CalculateStockPriceUseCase',
-      useValue: calculateStockPriceUseCase,
+      useFactory: (orderRepository) => new CalculateStockPriceUseCase(orderRepository),
+      inject: [ORDER_REPOSITORY],
     },
     {
       provide: 'ExecuteOrderUseCase',
-      useValue: executeOrderUseCase,
+      useFactory: (orderRepository, portfolioRepository, bankAccountRepository, transactionRepository) =>
+        new ExecuteOrderUseCase(orderRepository, portfolioRepository, bankAccountRepository, transactionRepository),
+      inject: [ORDER_REPOSITORY, PORTFOLIO_REPOSITORY, BANK_ACCOUNT_REPOSITORY, TRANSACTION_REPOSITORY],
+    },
+    {
+      provide: 'GetMyOrdersUseCase',
+      useFactory: (orderRepository, stockRepository) =>
+        new GetMyOrdersUseCase(orderRepository, stockRepository),
+      inject: [ORDER_REPOSITORY, STOCK_REPOSITORY],
     },
   ],
 })

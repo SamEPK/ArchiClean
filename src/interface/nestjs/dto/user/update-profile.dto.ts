@@ -23,9 +23,3 @@ export class UpdateProfileDto {
   @IsBoolean()
   isPublic?: boolean;
 }
-
-export class SearchUsersDto {
-  @IsString()
-  @MinLength(2, { message: 'La recherche doit contenir au moins 2 caractères' })
-  query!: string;
-}

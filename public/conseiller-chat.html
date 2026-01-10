@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Conseiller - Banque AVENIR</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+      background: white;
+    }
+
+    /* SIDEBAR CLIENTS */
+    .sidebar {
+      background: #1e293b;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-header h1 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .advisor-name {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .search-box {
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 13px;
+    }
+
+    .search-box input::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .clients-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .client-item {
+      padding: 14px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid transparent;
+    }
+
+    .client-item:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateX(4px);
+    }
+
+    .client-item.active {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+      border-left-color: #667eea;
+    }
+
+    .client-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .client-email {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .client-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 11px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    /* CHAT AREA */
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      background: #f8fafc;
+    }
+
+    .chat-header {
+      padding: 20px 24px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .chat-header h2 {
+      font-size: 18px;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .chat-header .client-info {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 70%;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.sent {
+      margin-left: auto;
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .message-content {
+      flex: 1;
+    }
+
+    .message-bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .message.received .message-bubble {
+      background: white;
+      color: #1e293b;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .message.sent .message-bubble {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .message-time {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .message.sent .message-time {
+      text-align: right;
+    }
+
+    .chat-input-area {
+      padding: 20px 24px;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 24px;
+      padding: 8px 16px;
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      padding: 8px;
+      outline: none;
+      color: #1e293b;
+    }
+
+    .input-wrapper input::placeholder {
+      color: #94a3b8;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 18px;
+    }
+
+    .send-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #64748b;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #94a3b8;
+    }
+
+    .error-message {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 12px;
+      font-size: 13px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR - Liste des clients -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>💬 Messagerie Conseiller</h1>
+        <div class="advisor-name">👤 Sophie Laurent</div>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Rechercher un client..." onkeyup="searchClients()">
+      </div>
+
+      <div class="clients-list" id="clientsList">
+        <div class="loading">Chargement des clients...</div>
+      </div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area">
+      <div id="chatContent">
+        <div class="empty-state">
+          <div class="empty-state-icon">💬</div>
+          <h3>Sélectionnez un client</h3>
+          <p>Choisissez un client dans la liste pour commencer la conversation</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let clients = [];
+    let selectedClient = null;
+    let messages = {};
+
+    // Charger la liste des clients
+    async function loadClients() {
+      try {
+        const response = await fetch(`${API_BASE}/clients`);
+        if (!response.ok) {
+          throw new Error('Erreur chargement clients');
+        }
+        
+        const data = await response.json();
+        clients = data.map(client => ({
+          id: client.id,
+          firstName: client.firstName || 'Client',
+          lastName: client.lastName || '',
+          email: client.email,
+          initials: `${(client.firstName || 'C')[0]}${(client.lastName || '')[0] || ''}`.toUpperCase()
+        }));
+
+        renderClients();
+      } catch (error) {
+        console.error('Erreur:', error);
+        document.getElementById('clientsList').innerHTML = `
+          <div class="error-message">
+            ⚠️ Impossible de charger les clients. Vérifiez que le serveur est démarré.
+          </div>
+        `;
+      }
+    }
+
+    // Afficher la liste des clients
+    function renderClients(filter = '') {
+      const container = document.getElementById('clientsList');
+      
+      const filteredClients = clients.filter(client => {
+        const searchTerm = filter.toLowerCase();
+        return client.firstName.toLowerCase().includes(searchTerm) ||
+               client.lastName.toLowerCase().includes(searchTerm) ||
+               client.email.toLowerCase().includes(searchTerm);
+      });
+
+      if (filteredClients.length === 0) {
+        container.innerHTML = '<div class="loading">Aucun client trouvé</div>';
+        return;
+      }
+
+      container.innerHTML = filteredClients.map(client => `
+        <div class="client-item ${selectedClient?.id === client.id ? 'active' : ''}" 
+             onclick="selectClient('${client.id}')">
+          <div class="client-name">${client.firstName} ${client.lastName}</div>
+          <div class="client-email">${client.email}</div>
+          <div class="client-status">
+            <span class="status-dot"></span>
+            <span>En ligne</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Rechercher des clients
+    function searchClients() {
+      const searchTerm = document.getElementById('searchInput').value;
+      renderClients(searchTerm);
+    }
+
+    // Sélectionner un client
+    function selectClient(clientId) {
+      selectedClient = clients.find(c => c.id === clientId);
+      if (!selectedClient) return;
+
+      renderClients(document.getElementById('searchInput').value);
+      renderChat();
+      
+      // Charger les messages (simulation pour l'instant)
+      if (!messages[clientId]) {
+        messages[clientId] = [
+          {
+            id: 1,
+            sender: 'client',
+            content: `Bonjour, je suis ${selectedClient.firstName}. J'ai une question concernant mon compte.`,
+            time: new Date(Date.now() - 3600000).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+          }
+        ];
+      }
+
+      renderMessages();
+    }
+
+    // Afficher la zone de chat
+    function renderChat() {
+      if (!selectedClient) return;
+
+      document.getElementById('chatContent').innerHTML = `
+        <div class="chat-header">
+          <h2>${selectedClient.firstName} ${selectedClient.lastName}</h2>
+          <div class="client-info">${selectedClient.email}</div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer"></div>
+
+        <div class="chat-input-area">
+          <div class="input-wrapper">
+            <input type="text" 
+                   id="messageInput" 
+                   placeholder="Tapez votre message..." 
+                   onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Afficher les messages
+    function renderMessages() {
+      if (!selectedClient) return;
+
+      const container = document.getElementById('messagesContainer');
+      const clientMessages = messages[selectedClient.id] || [];
+
+      if (clientMessages.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">✉️</div>
+            <h3>Nouvelle conversation</h3>
+            <p>Envoyez le premier message à ${selectedClient.firstName}</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = clientMessages.map(msg => `
+        <div class="message ${msg.sender === 'advisor' ? 'sent' : 'received'}">
+          <div class="message-avatar">
+            ${msg.sender === 'advisor' ? 'SL' : selectedClient.initials}
+          </div>
+          <div class="message-content">
+            <div class="message-bubble">${msg.content}</div>
+            <div class="message-time">${msg.time}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Scroll vers le bas
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Gérer la touche Entrée
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    // Envoyer un message
+    async function sendMessage() {
+      if (!selectedClient) return;
+
+      const input = document.getElementById('messageInput');
+      const content = input.value.trim();
+
+      if (!content) return;
+
+      // Ajouter le message à la liste
+      if (!messages[selectedClient.id]) {
+        messages[selectedClient.id] = [];
+      }
+
+      const newMessage = {
+        id: Date.now(),
+        sender: 'advisor',
+        content: content,
+        time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+      };
+
+      messages[selectedClient.id].push(newMessage);
+
+      // Vider l'input
+      input.value = '';
+
+      // Rafraîchir l'affichage
+      renderMessages();
+
+      // TODO: Envoyer au backend via WebSocket ou API
+      try {
+        await fetch(`${API_BASE}/api/messaging/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversationId: `conv-${selectedClient.id}`,
+            senderId: 'advisor-sophie',
+            content: content
+          })
+        });
+      } catch (error) {
+        console.log('Message stocké localement (backend indisponible)');
+      }
+
+      // Simuler une réponse du client après 2 secondes
+      setTimeout(() => {
+        const responses = [
+          "Merci pour votre réponse !",
+          "D'accord, je comprends.",
+          "Parfait, merci beaucoup.",
+          "C'est noté, merci pour votre aide."
+        ];
+        
+        const autoReply = {
+          id: Date.now(),
+          sender: 'client',
+          content: responses[Math.floor(Math.random() * responses.length)],
+          time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+        };
+
+        messages[selectedClient.id].push(autoReply);
+        renderMessages();
+      }, 2000);
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+      loadClients();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advisor Dashboard COMPLET - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --card: #111827;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #a855f7;
+      --accent-2: #9333ea;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --success: #34d399;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(168, 85, 247, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(147, 51, 234, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav h1 { font-size: 18px; }
+    .user-info { color: var(--muted); font-size: 13px; margin-right: 12px; }
+    .btn-logout {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .container { max-width: 1600px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; }
+    .sidebar {
+      width: 250px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+    .sidebar h3 { font-size: 14px; margin-bottom: 12px; color: var(--accent); }
+    .menu-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 4px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .menu-item:hover { background: rgba(255,255,255,0.05); }
+    .menu-item.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-weight: 700;
+      border-left-color: var(--success);
+    }
+    .main { flex: 1; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .panel h2 { font-size: 16px; margin-bottom: 16px; color: var(--accent); }
+    .panel h3 { font-size: 14px; margin: 16px 0 12px 0; color: var(--accent-2); }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 12px;
+      margin: 8px 0 4px 0;
+      color: var(--muted);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+    }
+    textarea { min-height: 60px; resize: vertical; }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 8px 4px 0 0;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .btn-success { background: var(--success); color: #0b1120; }
+    .btn-small { padding: 4px 8px; font-size: 11px; margin: 2px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    pre {
+      background: #0a1020;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow-x: auto;
+      font-size: 11px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .result {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      min-height: 20px;
+    }
+    .success { background: rgba(52, 211, 153, 0.1); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .error { background: rgba(248, 113, 113, 0.1); color: var(--danger); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .list-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .list-item h4 { font-size: 13px; margin-bottom: 6px; }
+    .list-item p { font-size: 12px; color: var(--muted); margin: 3px 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+    .badge-success { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .badge-warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .badge-info { background: rgba(168, 85, 247, 0.2); color: var(--accent); }
+  </style>
+</head>
+<body>
+  <!-- Backend Toggle -->
+  <div class="backend-toggle">
+    <span class="backend-toggle-label">Backend:</span>
+    <span class="backend-name" id="backendName">NestJS</span>
+    <div class="toggle-switch" id="backendToggle" onclick="toggleBackend()">
+      <div class="toggle-slider"></div>
+    </div>
+    <span class="backend-port" id="backendPort">:3000</span>
+  </div>
+
+  <div class="nav">
+    <h1>💼 Banque AVENIR - Conseiller Dashboard (100% Routes)</h1>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="user-info" id="userInfo">Chargement...</span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <h3>📑 Menu</h3>
+      <div class="menu-item active" onclick="showSection('conversations')">💬 Conversations</div>
+      <div class="menu-item" onclick="showSection('credits')">💰 Crédits</div>
+      <div class="menu-item" onclick="showSection('messaging')">📨 Messaging Legacy</div>
+      <div class="menu-item" onclick="showSection('chat')">✉️ Chat Clients</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <!-- CONVERSATIONS SECTION -->
+      <div id="section-conversations" class="section active">
+        <div class="panel">
+          <h2>💬 Conversations</h2>
+
+          <h3>💬 Conversations Ouvertes (Non Assignées)</h3>
+          <p style="color: var(--muted); font-size: 12px; margin-bottom: 8px;">Liste des conversations en attente d'attribution</p>
+          <button class="btn btn-secondary" onclick="loadOpenConversations()">Actualiser</button>
+          <div id="openConversationsList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">📝 Répondre à une Conversation</h3>
+          <label>Sélectionner la conversation</label>
+          <select id="replyConvSelector" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px;">
+            <option value="">-- Sélectionner une conversation --</option>
+          </select>
+          <label>Votre réponse</label>
+          <textarea id="replyContent" placeholder="Bonjour, je prends en charge votre demande..." style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px; min-height: 100px;"></textarea>
+          <button class="btn btn-primary" onclick="replyToSelectedConversation()">Envoyer la réponse</button>
+          <div id="res-replyToConversation" class="result"></div>
+
+          <h3>POST /advisors/conversations/:conversationId/transfer</h3>
+          <div class="grid">
+            <div><label>Conversation</label><select id="transferConvId" class="conv-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Conseiller destinataire</label><select id="transferToAdvisorId" class="advisor-selector"><option value="">Chargement...</option></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="exec('transferConversation')">Transférer</button>
+          <div id="res-transferConversation" class="result"></div>
+        </div>
+      </div>
+
+      <!-- CREDITS SECTION -->
+      <div id="section-credits" class="section">
+        <div class="panel">
+          <h2>💰 Crédits</h2>
+
+          <h3>POST /advisors/credits</h3>
+          <p style="color: var(--muted); font-size: 12px; margin-bottom: 8px;">Octroyer un crédit avec mensualité constante et assurance incluse</p>
+          <div class="grid">
+            <div><label>Sélectionnez un client</label><select id="creditClientId"><option value="">Chargement...</option></select></div>
+            <div><label>Montant (€)</label><input id="creditAmount" type="number" value="20000" /></div>
+          </div>
+          <div class="grid">
+            <div><label>Taux annuel (%)</label><input id="creditAnnualRate" type="number" step="0.1" value="3.2" /></div>
+            <div><label>Taux d'assurance (%)</label><input id="creditInsuranceRate" type="number" step="0.1" value="0.3" /></div>
+          </div>
+          <label>Durée (mois)</label>
+          <input id="creditDuration" type="number" value="60" />
+          <button class="btn btn-primary" onclick="exec('grantCredit')">Octroyer le crédit</button>
+          <div id="res-grantCredit" class="result"></div>
+
+          <h3>GET /advisors/clients/:clientId/credits</h3>
+          <label>Sélectionnez un client</label>
+          <select id="viewCreditsClientId"><option value="">Chargement...</option></select>
+          <button class="btn btn-secondary" onclick="exec('listClientCredits')">Voir les crédits</button>
+          <pre id="res-listClientCredits">{}</pre>
+        </div>
+      </div>
+
+      <!-- MESSAGING LEGACY SECTION -->
+      <div id="section-messaging" class="section">
+        <div class="panel">
+          <h2>📨 Messaging Legacy</h2>
+
+          <h3>📤 Envoyer un Message</h3>
+          <label>Sélectionner la conversation</label>
+          <select id="msgSendConvSelector" class="conv-selector" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px;">
+            <option value="">Chargement...</option>
+          </select>
+          <label>Contenu</label>
+          <textarea id="msgContent" placeholder="Message content..." style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px; min-height: 100px;"></textarea>
+          <button class="btn btn-primary" onclick="sendMessageToConversation()">Envoyer</button>
+          <div id="res-sendMessage" class="result"></div>
+
+          <h3>POST /messaging/assign</h3>
+          <div class="grid">
+            <div><label>Conversation</label><select id="msgAssignConvId" class="conv-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Conseiller</label><select id="msgAssignAdvisorId" class="advisor-selector"><option value="">Chargement...</option></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="exec('assignMessage')">Assigner</button>
+          <div id="res-assignMessage" class="result"></div>
+
+          <h3>POST /messaging/transfer</h3>
+          <div class="grid">
+            <div><label>Conversation</label><select id="msgTransferConvId" class="conv-selector"><option value="">Chargement...</option></select></div>
+          </div>
+          <div class="grid">
+            <div><label>Conseiller source</label><select id="msgTransferFromId" class="advisor-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Conseiller destination</label><select id="msgTransferToId" class="advisor-selector"><option value="">Chargement...</option></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="exec('transferMessage')">Transférer</button>
+          <div id="res-transferMessage" class="result"></div>
+
+          <h3>GET /messaging/open</h3>
+          <button class="btn btn-secondary" onclick="exec('getOpenMessages')">Conversations ouvertes</button>
+          <pre id="res-getOpenMessages">{}</pre>
+        </div>
+      </div>
+
+      <!-- CHAT SECTION -->
+      <div id="section-chat" class="section">
+        <div class="panel" style="min-height: 600px; display: flex; flex-direction: column;">
+          <h2>✉️ Chat avec les Clients</h2>
+          
+          <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; flex: 1; min-height: 0;">
+            <!-- Liste des clients -->
+            <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-y: auto;">
+              <h3 style="font-size: 13px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase;">📋 Clients</h3>
+              <div id="advisorClientsList">
+                <div style="padding: 12px; text-align: center; color: var(--muted); font-size: 12px;">Chargement...</div>
+              </div>
+            </div>
+
+            <!-- Zone de chat -->
+            <div style="display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+              <div id="advisorChatInfo" style="padding: 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted);">
+                Sélectionnez un client
+              </div>
+              
+              <div id="advisorChatMessages" style="flex: 1; overflow-y: auto; padding: 16px; background: rgba(0,0,0,0.1);">
+                <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                  <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+                  <div>Cliquez sur un client pour démarrer la conversation</div>
+                </div>
+              </div>
+
+              <div style="padding: 12px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--border);">
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="advisorChatInput" placeholder="Tapez votre message..." style="flex: 1; padding: 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 13px;" onkeypress="if(event.key==='Enter') sendAdvisorChatMessage()" disabled />
+                  <button class="btn btn-primary" onclick="sendAdvisorChatMessage()" id="advisorSendBtn" disabled style="padding: 10px 20px;">➤</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/backend-toggle.js"></script>
+  <script src="advisor-complete.js"></script>
+  <script>
+    // Système de chat conseiller
+    let advisorClients = [];
+    let selectedClient = null;
+    let advisorConversations = {};
+
+    async function loadAdvisorClients() {
+      try {
+        const response = await fetch('/clients');
+        if (!response.ok) throw new Error('Erreur');
+        
+        const data = await response.json();
+        advisorClients = data.map(c => ({
+          id: c.id,
+          firstName: c.firstName || 'Client',
+          lastName: c.lastName || '',
+          email: c.email,
+          initials: `${(c.firstName || 'C')[0]}${(c.lastName || '')[0] || ''}`.toUpperCase()
+        }));
+
+        renderAdvisorClientsList();
+      } catch (error) {
+        console.error('Erreur:', error);
+        document.getElementById('advisorClientsList').innerHTML = 
+          '<div style="padding: 12px; text-align: center; color: var(--danger); font-size: 11px;">❌ Erreur</div>';
+      }
+    }
+
+    function renderAdvisorClientsList() {
+      const container = document.getElementById('advisorClientsList');
+      
+      if (advisorClients.length === 0) {
+        container.innerHTML = '<div style="padding: 12px; text-align: center; color: var(--muted); font-size: 11px;">Aucun client</div>';
+        return;
+      }
+
+      container.innerHTML = advisorClients.map(client => `
+        <div style="padding: 10px 12px; margin-bottom: 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${selectedClient?.id === client.id ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(52, 211, 153, 0.2))' : 'var(--card)'}; border-left: 3px solid ${selectedClient?.id === client.id ? 'var(--accent)' : 'transparent'}; border: 1px solid var(--border);" 
+             onclick="selectAdvisorClient('${client.id}')">
+          <div style="font-weight: 600; font-size: 13px; color: var(--text); margin-bottom: 2px;">${client.firstName} ${client.lastName}</div>
+          <div style="font-size: 11px; color: var(--muted);">${client.email}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectAdvisorClient(clientId) {
+      selectedClient = advisorClients.find(c => c.id === clientId);
+      if (!selectedClient) return;
+
+      if (!advisorConversations[clientId]) {
+        advisorConversations[clientId] = [];
+      }
+
+      renderAdvisorClientsList();
+      document.getElementById('advisorChatInput').disabled = false;
+      document.getElementById('advisorSendBtn').disabled = false;
+
+      document.getElementById('advisorChatInfo').innerHTML = `
+        <span style="font-weight: 600; color: var(--text);">💬 ${selectedClient.firstName} ${selectedClient.lastName}</span>
+        <span style="margin-left: 12px;"><span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 4px;"></span>En ligne</span>
+      `;
+
+      // Load conversation history
+      loadAdvisorConversationHistory(clientId);
+    }
+
+    function renderAdvisorChatMessages() {
+      const container = document.getElementById('advisorChatMessages');
+      const msgs = advisorConversations[selectedClient.id] || [];
+
+      if (msgs.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
+            <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+            <div>Envoyez le premier message à ${selectedClient.firstName}</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = msgs.map(msg => {
+        const isAdvisor = msg.sender === 'advisor';
+        return `
+          <div style="margin-bottom: 12px; display: flex; gap: 8px; ${isAdvisor ? 'flex-direction: row-reverse;' : ''}">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: ${isAdvisor ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'linear-gradient(135deg, #34d399, #10b981)'}; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; flex-shrink: 0;">
+              ${isAdvisor ? 'SL' : selectedClient.initials}
+            </div>
+            <div>
+              <div style="padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; max-width: 400px; background: ${isAdvisor ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'var(--card)'}; color: ${isAdvisor ? 'white' : 'var(--text)'}; border: ${isAdvisor ? 'none' : '1px solid var(--border)'}; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                ${msg.content}
+              </div>
+              <div style="font-size: 10px; color: var(--muted); margin-top: 2px; padding: 0 4px;">
+                ${msg.time}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendAdvisorChatMessage() {
+      if (!selectedClient) return;
+
+      const input = document.getElementById('advisorChatInput');
+      const content = input.value.trim();
+      if (!content) return;
+
+      // Send message via REST API for advisor
+      sendAdvisorMessageViaAPI(content);
+      input.value = '';
+    }
+
+    async function sendAdvisorMessageViaAPI(content) {
+      if (!selectedClient) return;
+
+      try {
+        const token = getToken();
+        const conversationId = selectedClient.id; // Use client ID as conversation ID
+        
+        const response = await fetch(`/advisors/conversations/${conversationId}/reply`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Add message to local conversation
+          const msg = {
+            sender: 'advisor',
+            content: content,
+            time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+          };
+
+          if (!advisorConversations[selectedClient.id]) {
+            advisorConversations[selectedClient.id] = [];
+          }
+          advisorConversations[selectedClient.id].push(msg);
+          renderAdvisorChatMessages();
+        } else {
+          alert('Erreur lors de l\'envoi: ' + (data.message || 'Erreur inconnue'));
+        }
+      } catch (error) {
+        console.error('Failed to send advisor message:', error);
+        alert('Impossible d\'envoyer le message. Veuillez réessayer.');
+      }
+    }
+
+    // Load conversation history when selecting a client
+    async function loadAdvisorConversationHistory(clientId) {
+      try {
+        const token = getToken();
+        const response = await fetch(`/advisors/conversations/${clientId}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const messages = data.messages || [];
+
+        // Convert to chat format
+        advisorConversations[clientId] = messages.map(msg => ({
+          sender: msg.senderRole || 'client', // 'client' or 'advisor'
+          content: msg.content,
+          time: new Date(msg.createdAt).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+        }));
+
+        renderAdvisorChatMessages();
+      } catch (error) {
+        console.error('Failed to load conversation history:', error);
+      }
+    }
+
+    // Charger les clients quand on affiche la section chat
+    const originalShowSection = window.showSection;
+    window.showSection = function(sectionName) {
+      originalShowSection(sectionName);
+      if (sectionName === 'chat' && advisorClients.length === 0) {
+        loadAdvisorClients();
+      }
+      if (sectionName === 'conversations' || sectionName === 'messaging') {
+        loadConversationsForSelectors();
+        loadAdvisorsForSelectors();
+      }
+    };
+
+    // Charger conversations et conseillers pour les dropdowns
+    async function loadConversationsForSelectors() {
+      try {
+        const response = await fetch('/advisors/conversations/open', {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const conversations = data.conversations || [];
+
+        const selectors = document.querySelectorAll('.conv-selector');
+        selectors.forEach(select => {
+          if (conversations.length === 0) {
+            select.innerHTML = '<option value="">Aucune conversation ouverte</option>';
+          } else {
+            select.innerHTML = '<option value="">-- Sélectionnez une conversation --</option>' +
+              conversations.map(conv => 
+                `<option value="${conv.id}">Conv ${conv.clientName || conv.id} - ${conv.subject || 'Sans sujet'}</option>`
+              ).join('');
+          }
+        });
+      } catch (err) {
+        console.error('Erreur chargement conversations:', err);
+      }
+    }
+
+    async function loadAdvisorsForSelectors() {
+      try {
+        const response = await fetch('/advisors');
+        if (!response.ok) return;
+        
+        const advisors = await response.json();
+
+        const selectors = document.querySelectorAll('.advisor-selector');
+        selectors.forEach(select => {
+          if (advisors.length === 0) {
+            select.innerHTML = '<option value="">Aucun conseiller</option>';
+          } else {
+            select.innerHTML = '<option value="">-- Sélectionnez un conseiller --</option>' +
+              advisors.map(adv => 
+                `<option value="${adv.id}">${adv.firstName} ${adv.lastName} (${adv.email})</option>`
+              ).join('');
+          }
+        });
+      } catch (err) {
+        console.error('Erreur chargement conseillers:', err);
+      }
+    }
+
+    // Charger au démarrage si on est sur ces sections
+    document.addEventListener('DOMContentLoaded', () => {
+      loadConversationsForSelectors();
+      loadAdvisorsForSelectors();
+    });
+
+    // ============================================
+    // ADVISOR FUNCTIONS - ID-Free Interface
+    // ============================================
+
+    async function loadOpenConversations() {
+      try {
+        const response = await fetch('/advisors/conversations/open', {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const conversations = Array.isArray(data) ? data : (data.conversations || []);
+
+        const container = document.getElementById('openConversationsList');
+        const selector = document.getElementById('replyConvSelector');
+
+        if (conversations.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucune conversation ouverte</p>';
+          selector.innerHTML = '<option value="">Aucune conversation disponible</option>';
+          return;
+        }
+
+        // Update selector
+        selector.innerHTML = '<option value="">-- Sélectionner une conversation --</option>' +
+          conversations.map(conv => `<option value="${conv.id}">Conv #${conv.id.substring(0, 8)} - ${conv.subject || 'Sans sujet'}</option>`).join('');
+
+        // Display as cards
+        container.innerHTML = conversations.map(conv => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${conv.subject || 'Conversation sans sujet'}</div>
+                <div style="color: var(--muted); font-size: 12px; margin-bottom: 6px;">${conv.lastMessage || 'Aucun message'}</div>
+                <div style="display: flex; gap: 12px; font-size: 11px; color: var(--muted);">
+                  <span>📅 ${new Date(conv.createdAt).toLocaleString('fr-FR')}</span>
+                  ${conv.clientName ? `<span>👤 ${conv.clientName}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-small btn-success" style="font-size: 11px;" onclick="assignConversationById('${conv.id}')">
+                ✅ Prendre en charge
+              </button>
+              <button class="btn btn-small btn-secondary" style="font-size: 11px;" onclick="viewConversationDetails('${conv.id}')">
+                👁️ Voir détails
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${conversations.length} conversations ouvertes chargées`);
+      } catch (error) {
+        console.error('❌ Erreur chargement conversations:', error);
+        document.getElementById('openConversationsList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function assignConversationById(conversationId) {
+      try {
+        const advisorInfo = JSON.parse(localStorage.getItem('advisorInfo'));
+        if (!advisorInfo?.id) throw new Error('Conseiller non authentifié');
+
+        const response = await fetch(`/advisors/conversations/${conversationId}/assign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            advisorId: advisorInfo.id
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Conversation prise en charge avec succès');
+        loadOpenConversations();
+        console.log('✅ Conversation assignée');
+      } catch (error) {
+        console.error('❌ Erreur assignation:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function replyToSelectedConversation() {
+      try {
+        const conversationId = document.getElementById('replyConvSelector').value;
+        const content = document.getElementById('replyContent').value.trim();
+
+        if (!conversationId) {
+          alert('⚠️ Veuillez sélectionner une conversation');
+          return;
+        }
+
+        if (!content) {
+          alert('⚠️ Veuillez entrer une réponse');
+          return;
+        }
+
+        const advisorInfo = JSON.parse(localStorage.getItem('advisorInfo'));
+        if (!advisorInfo?.id) throw new Error('Conseiller non authentifié');
+
+        const response = await fetch(`/advisors/conversations/${conversationId}/reply`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            advisorId: advisorInfo.id,
+            content
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Réponse envoyée avec succès');
+        document.getElementById('replyContent').value = '';
+        loadOpenConversations();
+        console.log('✅ Réponse envoyée');
+      } catch (error) {
+        console.error('❌ Erreur envoi réponse:', error);
+        alert(`❌ Erreur: ${error.message}`);
+        document.getElementById('res-replyToConversation').innerHTML = `<p style="color: var(--danger);">❌ ${error.message}</p>`;
+      }
+    }
+
+    async function sendMessageToConversation() {
+      try {
+        const conversationId = document.getElementById('msgSendConvSelector').value;
+        const content = document.getElementById('msgContent').value.trim();
+
+        if (!conversationId) {
+          alert('⚠️ Veuillez sélectionner une conversation');
+          return;
+        }
+
+        if (!content) {
+          alert('⚠️ Veuillez entrer un message');
+          return;
+        }
+
+        const advisorInfo = JSON.parse(localStorage.getItem('advisorInfo'));
+        if (!advisorInfo?.id) throw new Error('Conseiller non authentifié');
+
+        const response = await fetch('/messaging/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            conversationId,
+            senderId: advisorInfo.id,
+            content
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Message envoyé avec succès');
+        document.getElementById('msgContent').value = '';
+        console.log('✅ Message envoyé');
+      } catch (error) {
+        console.error('❌ Erreur envoi message:', error);
+        alert(`❌ Erreur: ${error.message}`);
+        document.getElementById('res-sendMessage').innerHTML = `<p style="color: var(--danger);">❌ ${error.message}</p>`;
+      }
+    }
+
+    async function viewConversationDetails(conversationId) {
+      try {
+        const response = await fetch(`/advisors/conversations/${conversationId}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const conversation = await response.json();
+        const details = JSON.stringify(conversation, null, 2);
+        alert(`Détails de la conversation:\n\n${details}`);
+        console.log('✅ Détails de la conversation:', conversation);
+      } catch (error) {
+        console.error('❌ Erreur chargement détails:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+  </script>
+</body>
+</html>

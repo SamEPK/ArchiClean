@@ -9,7 +9,7 @@ export interface EmailOptions {
   text?: string;
 }
 
-export class EmailService {
+export class EmailService implements IEmailService {
   private transporter: Transporter;
   private emailFrom: string;
 
@@ -247,6 +247,11 @@ export class EmailService {
       html,
       text,
     });
+  }
+
+  // Implémentation de l'interface IEmailService
+  async sendConfirmationEmail(email: string, token: string, clientName: string): Promise<void> {
+    return this.sendUserConfirmationEmail(email, token, clientName);
   }
 }
 

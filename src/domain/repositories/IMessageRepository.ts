@@ -9,4 +9,8 @@ export interface IMessageRepository {
   assignConversation(convId: string, advisorId: string): Promise<void>;
   transferConversation(convId: string, fromAdvisorId: string, toAdvisorId: string): Promise<void>;
   findConversationById(convId: string): Promise<Conversation | null>;
+  markConversationAssignedByFirstResponder(
+    convId: string,
+    advisorId: string,
+  ): Promise<void>;
 }

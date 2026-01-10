@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NestJS Demo Dashboard - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="nav">
+    <h1>🎓 NestJS Pedagogical Dashboard - Banque AVENIR</h1>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="user-info">Dashboard de démonstration</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <h3>📑 Sections</h3>
+      <div class="menu-item active" onclick="showSection('adapter')">🔄 HTTP Adapter</div>
+      <div class="menu-item" onclick="showSection('cqrs')">⚡ CQRS Demo</div>
+      <div class="menu-item" onclick="showSection('events')">📜 Event Sourcing</div>
+      <div class="menu-item" onclick="showSection('clients')">👤 Clients</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <!-- SECTION 1: HTTP ADAPTER CONTROL PANEL -->
+      <div id="section-adapter" class="section active">
+        <div class="panel">
+          <h2>🔄 HTTP Adapter Control Panel</h2>
+          <p class="panel-desc">Démonstration du changement d'adaptateur HTTP entre Express et Fastify</p>
+
+          <div class="adapter-status" id="adapterStatus">
+            <div class="adapter-badge" id="adapterBadge">Express</div>
+            <div class="adapter-metrics">
+              <div class="metric">
+                <span class="metric-label">Uptime:</span>
+                <span class="metric-value" id="uptime">--</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Platform:</span>
+                <span class="metric-value" id="platform">--</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <button class="btn btn-primary" onclick="switchAdapter()">🔄 Changer vers Fastify</button>
+            <button class="btn btn-secondary" onclick="refreshAdapterStatus()">🔄 Rafraîchir</button>
+            <button class="btn btn-secondary" onclick="runBenchmark()">📊 Benchmark</button>
+          </div>
+
+          <div id="res-adapterSwitch" class="result"></div>
+          <div id="res-benchmark"></div>
+
+          <!-- DATABASE CONTROL -->
+          <div class="adapter-status" style="margin-top: 24px;">
+            <h3>💾 Contrôle de Base de Données</h3>
+            <div class="status-card">
+              <div class="metrics-grid">
+                <div class="metric">
+                  <span class="metric-label">Type de BDD:</span>
+                  <span class="metric-value" id="dbType">--</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Statut:</span>
+                  <span class="metric-value" id="dbStatus">--</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 16px;">
+              <button class="btn btn-primary" onclick="switchDatabase()">🔄 Changer de BDD</button>
+              <button class="btn btn-secondary" onclick="refreshDatabaseStatus()">🔄 Rafraîchir</button>
+            </div>
+
+            <div id="res-dbSwitch" class="result"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: CQRS DEMONSTRATION -->
+      <div id="section-cqrs" class="section">
+        <div class="panel">
+          <h2>⚡ CQRS Pattern Demonstration</h2>
+          <p class="panel-desc">Séparation Commands (Write) / Queries (Read)</p>
+
+          <div class="cqrs-container">
+            <!-- Commands Side (Write) -->
+            <div class="cqrs-side commands-side">
+              <h3>✍️ COMMANDS (Write Side)</h3>
+
+              <div class="card">
+                <h4>💰 Accorder un Crédit</h4>
+                <label>Sélectionnez un client</label>
+                <select id="creditClientId">
+                  <option value="">Chargement...</option>
+                </select>
+
+                <div class="grid-2">
+                  <div>
+                    <label>Montant (€)</label>
+                    <input id="creditAmount" type="number" value="20000" />
+                  </div>
+                  <div>
+                    <label>Durée (mois)</label>
+                    <input id="creditDuration" type="number" value="60" />
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div>
+                    <label>Taux annuel (%)</label>
+                    <input id="creditAnnualRate" type="number" step="0.1" value="3.2" />
+                  </div>
+                  <div>
+                    <label>Taux assurance (%)</label>
+                    <input id="creditInsuranceRate" type="number" step="0.1" value="0.3" />
+                  </div>
+                </div>
+
+                <button class="btn btn-success" onclick="executeGrantCredit()">Octroyer le crédit</button>
+                <div id="res-grantCredit" class="result"></div>
+              </div>
+
+              <div class="card">
+                <h4>📈 Placer un Ordre (en développement)</h4>
+                <label>Client</label>
+                <select id="orderClientId">
+                  <option value="">Chargement...</option>
+                </select>
+
+                <div class="grid-2">
+                  <div>
+                    <label>Action</label>
+                    <input id="orderStockSymbol" placeholder="AAPL" />
+                  </div>
+                  <div>
+                    <label>Quantité</label>
+                    <input id="orderQuantity" type="number" value="10" />
+                  </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="executePlaceOrder()">Placer l'ordre</button>
+                <div id="res-placeOrder" class="result"></div>
+              </div>
+            </div>
+
+            <!-- Queries Side (Read) -->
+            <div class="cqrs-side queries-side">
+              <h3>📖 QUERIES (Read Side)</h3>
+
+              <div class="card">
+                <h4>Portfolio du Client</h4>
+                <label>Sélectionnez un client</label>
+                <select id="portfolioClientId" onchange="refreshPortfolio()">
+                  <option value="">Chargement...</option>
+                </select>
+
+                <button class="btn btn-secondary" onclick="refreshPortfolio()">🔄 Rafraîchir</button>
+
+                <div id="portfolioDisplay" class="portfolio-display">
+                  <p class="muted">Sélectionnez un client pour voir son portfolio</p>
+                </div>
+              </div>
+
+              <div class="card">
+                <h4>Dernières Opérations</h4>
+                <p class="muted">Affichage en temps réel des commands exécutées</p>
+                <div id="lastOperations"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: EVENT SOURCING TIMELINE -->
+      <div id="section-events" class="section">
+        <div class="panel">
+          <h2>📜 Event Sourcing Timeline</h2>
+          <p class="panel-desc">Visualisation des événements et reconstruction d'état</p>
+
+          <div class="event-controls">
+            <button class="btn btn-secondary" onclick="loadAllEvents()">🔄 Charger tous les événements</button>
+            <button class="btn btn-secondary" onclick="loadClientEvents()">📋 Événements du client sélectionné</button>
+            <div style="flex: 1;"></div>
+            <button class="btn btn-primary" onclick="rebuildStateForSelectedClient()" id="rebuildBtn">
+              🔧 Reconstruire l'état
+            </button>
+          </div>
+          <div id="eventContextInfo" class="result" style="margin-top: 10px; display: none;"></div>
+          <div id="eventsTimeline" class="events-timeline"></div>
+          <div id="rebuildResult" class="rebuild-result"></div>
+        </div>
+      </div>
+      <!-- SECTION 4: CLIENT SELECTION & PROFILES -->
+      <div id="section-clients" class="section">
+        <div class="panel">
+          <h2>👤 Sélection Client & Profils</h2>
+          <p class="panel-desc">Interface visuelle pour la sélection et consultation de profils clients</p>
+          <button class="btn btn-secondary" onclick="loadClientsTable()">🔄 Rafraîchir la liste</button>
+          <div id="clientsTable" class="clients-table"></div>
+          <div id="clientProfile" class="client-profile"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

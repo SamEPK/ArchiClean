@@ -1,0 +1,1953 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Dashboard COMPLET - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --card: #111827;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #38bdf8;
+      --accent-2: #34d399;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --success: #34d399;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(52, 211, 153, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav h1 { font-size: 18px; }
+    .user-info { color: var(--muted); font-size: 13px; margin-right: 12px; }
+    .btn-logout {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .container { max-width: 1600px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; }
+    .sidebar {
+      width: 250px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+    .sidebar h3 { font-size: 14px; margin-bottom: 12px; color: var(--accent); }
+    .menu-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 4px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .menu-item:hover { background: rgba(255,255,255,0.05); }
+    .menu-item.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+      font-weight: 700;
+      border-left-color: var(--success);
+    }
+    .main { flex: 1; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .panel h2 { font-size: 16px; margin-bottom: 16px; color: var(--accent); }
+    .panel h3 { font-size: 14px; margin: 16px 0 12px 0; color: var(--accent-2); }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 12px;
+      margin: 8px 0 4px 0;
+      color: var(--muted);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+    }
+    textarea { min-height: 60px; resize: vertical; }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 8px 4px 0 0;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b1120; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-small { padding: 4px 8px; font-size: 11px; margin: 2px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    pre {
+      background: #0a1020;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow-x: auto;
+      font-size: 11px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .result {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      min-height: 20px;
+    }
+    .success { background: rgba(52, 211, 153, 0.1); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .error { background: rgba(248, 113, 113, 0.1); color: var(--danger); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .list-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .list-item h4 { font-size: 13px; margin-bottom: 6px; }
+    .list-item p { font-size: 12px; color: var(--muted); margin: 3px 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+    .badge-success { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .badge-danger { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+    .badge-info { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
+    .badge-warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <!-- Backend Toggle -->
+  <div class="backend-toggle">
+    <span class="backend-toggle-label">Backend:</span>
+    <span class="backend-name" id="backendName">NestJS</span>
+    <div class="toggle-switch" id="backendToggle" onclick="toggleBackend()">
+      <div class="toggle-slider"></div>
+    </div>
+    <span class="backend-port" id="backendPort">:3000</span>
+  </div>
+
+  <div class="nav">
+    <h1>🏦 Banque AVENIR - Client Dashboard (100% Routes)</h1>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="user-info" id="userInfo">Chargement...</span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <h3>📑 Menu</h3>
+      <div class="menu-item active" onclick="showSection('profile')">👤 Profil</div>
+      <div class="menu-item" onclick="showSection('accounts')">🏦 Comptes</div>
+      <div class="menu-item" onclick="showSection('savings')">💰 Épargne</div>
+      <div class="menu-item" onclick="showSection('stocks')">📈 Actions</div>
+      <div class="menu-item" onclick="showSection('orders')">📊 Ordres</div>
+      <div class="menu-item" onclick="showSection('portfolio')">💼 Portfolio</div>
+      <div class="menu-item" onclick="showSection('transactions')">💳 Transactions</div>
+      <div class="menu-item" onclick="showSection('social')">👥 Social</div>
+      <div class="menu-item" onclick="showSection('groups')">💬 Groupes</div>
+      <div class="menu-item" onclick="showSection('messages')">✉️ Messages</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <!-- PROFILE SECTION -->
+      <div id="section-profile" class="section active">
+        <div class="panel">
+          <h2>👤 Profil Utilisateur</h2>
+
+          <h3>GET /users/profile</h3>
+          <button class="btn btn-secondary" onclick="exec('getProfile')">Charger mon profil</button>
+          <pre id="res-getProfile">{}</pre>
+
+          <h3>PUT /users/profile</h3>
+          <div class="grid">
+            <div><label>Prénom</label><input id="updateFirstName" placeholder="Jean" /></div>
+            <div><label>Nom</label><input id="updateLastName" placeholder="Dupont" /></div>
+          </div>
+          <label>Bio</label>
+          <textarea id="updateBio" placeholder="Parlez-nous de vous..."></textarea>
+          <button class="btn btn-primary" onclick="exec('updateProfile')">Mettre à jour</button>
+          <div id="res-updateProfile" class="result"></div>
+
+          <h3>GET /users/search</h3>
+          <label>Recherche</label>
+          <input id="searchQuery" placeholder="Nom ou email..." />
+          <button class="btn btn-secondary" onclick="exec('searchUsers')">Rechercher</button>
+          <div id="res-searchUsers"></div>
+
+          <h3>GET /users/public</h3>
+          <button class="btn btn-secondary" onclick="exec('getPublicProfiles')">Profils publics (20 premiers)</button>
+          <div id="res-getPublicProfiles"></div>
+
+          <h3>🔍 Parcourir les Utilisateurs</h3>
+          <button class="btn btn-secondary" onclick="loadUserBrowser()">Charger les utilisateurs</button>
+          <div id="userBrowser" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">Détails de l'Utilisateur</h3>
+          <pre id="res-getUserById" style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px; max-height: 300px; overflow-y: auto;">{}</pre>
+        </div>
+      </div>
+
+      <!-- ACCOUNTS SECTION -->
+      <div id="section-accounts" class="section">
+        <div class="panel">
+          <h2>🏦 Comptes Bancaires</h2>
+
+          <h3>POST /clients/:clientId/accounts</h3>
+          <label>Nom du compte</label>
+          <input id="accountName" placeholder="Mon compte principal" />
+          <label>Solde initial (€)</label>
+          <input id="initialBalance" type="number" value="0" />
+          <button class="btn btn-primary" onclick="exec('createAccount')">Créer le compte</button>
+          <div id="res-createAccount" class="result"></div>
+
+          <h3>GET /clients/:clientId/accounts</h3>
+          <button class="btn btn-secondary" onclick="exec('getAccounts')">Actualiser mes comptes</button>
+          <div id="res-getAccounts"></div>
+        </div>
+      </div>
+
+      <!-- SAVINGS SECTION -->
+      <div id="section-savings" class="section">
+        <div class="panel">
+          <h2>💰 Comptes d'Épargne</h2>
+
+          <h3>POST /savings</h3>
+          <label>Compte bancaire source</label>
+          <select id="savingsSourceAccountId" class="account-selector">
+            <option value="">Chargement...</option>
+          </select>
+          <label>Montant initial (€)</label>
+          <input id="savingsAmount" type="number" value="1000" />
+          <button class="btn btn-primary" onclick="exec('openSavings')">Ouvrir compte d'épargne</button>
+          <div id="res-openSavings" class="result"></div>
+
+          <h3>POST /savings/apply-interest</h3>
+          <p style="color: var(--muted); font-size: 12px; margin: 8px 0;">Appliquer les intérêts quotidiens à tous les comptes d'épargne du système</p>
+          <button class="btn btn-secondary" onclick="exec('applyInterest')">Appliquer les intérêts</button>
+          <div id="res-applyInterest" class="result"></div>
+        </div>
+      </div>
+
+      <!-- STOCKS SECTION -->
+      <div id="section-stocks" class="section">
+        <div class="panel">
+          <h2>📈 Actions</h2>
+
+          <h3>GET /stocks</h3>
+          <button class="btn btn-secondary" onclick="exec('getStocks')">Toutes les actions</button>
+          <div id="res-getStocks"></div>
+
+          <h3>GET /stocks/available</h3>
+          <button class="btn btn-secondary" onclick="exec('getAvailableStocks')">Actions disponibles uniquement</button>
+          <div id="res-getAvailableStocks"></div>
+
+          <h3>📊 Actions Disponibles</h3>
+          <button class="btn btn-secondary" onclick="loadStocksTable()">Rafraîchir la liste</button>
+          <div id="stocksTableContainer" style="margin-top: 12px; overflow-x: auto;"></div>
+
+          <h3 style="margin-top: 24px;">Détails de l'Action</h3>
+          <pre id="res-getStockById" style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px; max-height: 300px; overflow-y: auto;">{}</pre>
+        </div>
+      </div>
+
+      <!-- ORDERS SECTION -->
+      <div id="section-orders" class="section">
+        <div class="panel">
+          <h2>📊 Ordres d'Actions</h2>
+
+          <h3>POST /orders</h3>
+          <div class="grid">
+            <div><label>Symbole</label><input id="orderSymbol" placeholder="AAPL" /></div>
+            <div><label>Type</label><select id="orderType"><option value="buy">Achat</option><option value="sell">Vente</option></select></div>
+          </div>
+          <div class="grid">
+            <div><label>Quantité</label><input id="orderQuantity" type="number" value="1" /></div>
+            <div><label>Prix (€)</label><input id="orderPrice" type="number" step="0.01" value="150.00" /></div>
+          </div>
+          <button class="btn btn-primary" onclick="exec('placeOrder')">Placer l'ordre</button>
+          <div id="res-placeOrder" class="result"></div>
+
+          <h3>📋 Mes Ordres en Attente</h3>
+          <button class="btn btn-secondary" onclick="loadMyOrders()">Rafraîchir mes ordres</button>
+          <div id="myOrdersList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">💰 Calculer Prix d'Équilibre</h3>
+          <label>Sélectionner une action</label>
+          <select id="priceStockDropdown" class="stock-selector" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px;">
+            <option value="">-- Sélectionner une action --</option>
+          </select>
+          <button class="btn btn-secondary" onclick="calculatePriceFromDropdown()">Calculer le prix</button>
+          <pre id="res-getStockPrice" style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px; max-height: 300px; overflow-y: auto; margin-top: 12px;">{}</pre>
+        </div>
+      </div>
+
+      <!-- PORTFOLIO SECTION -->
+      <div id="section-portfolio" class="section">
+        <div class="panel">
+          <h2>💼 Mon Portfolio</h2>
+
+          <h3>GET /portfolio/:userId</h3>
+          <button class="btn btn-secondary" onclick="exec('getPortfolio')">Charger mon portfolio</button>
+          <pre id="res-getPortfolio">{}</pre>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS SECTION -->
+      <div id="section-transactions" class="section">
+        <div class="panel">
+          <h2>💳 Transactions</h2>
+
+          <h3>POST /transactions/deposit</h3>
+          <div class="grid">
+            <div><label>Compte</label><select id="depositAccountId" class="account-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Montant (€)</label><input id="depositAmount" type="number" value="100" /></div>
+          </div>
+          <label>Description</label>
+          <input id="depositDescription" placeholder="Dépôt initial" />
+          <button class="btn btn-primary" onclick="exec('deposit')">Déposer</button>
+          <div id="res-deposit" class="result"></div>
+
+          <h3>POST /transactions/withdraw</h3>
+          <div class="grid">
+            <div><label>Compte</label><select id="withdrawAccountId" class="account-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Montant (€)</label><input id="withdrawAmount" type="number" value="50" /></div>
+          </div>
+          <label>Description</label>
+          <input id="withdrawDescription" placeholder="Retrait DAB" />
+          <button class="btn btn-primary" onclick="exec('withdraw')">Retirer</button>
+          <div id="res-withdraw" class="result"></div>
+
+          <h3>POST /transactions/transfer</h3>
+          <div class="grid">
+            <div><label>Compte source</label><select id="transferFromId" class="account-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Compte destination</label><select id="transferToId" class="account-selector"><option value="">Chargement...</option></select></div>
+          </div>
+          <div class="grid">
+            <div><label>Montant (€)</label><input id="transferAmount" type="number" value="50" /></div>
+            <div><label>Description</label><input id="transferDescription" placeholder="Remboursement" /></div>
+          </div>
+          <button class="btn btn-primary" onclick="exec('transfer')">Transférer</button>
+          <div id="res-transfer" class="result"></div>
+
+          <h3>GET /transactions/account/:accountId</h3>
+          <div class="grid">
+            <div><label>Compte</label><select id="historyAccountId" class="account-selector"><option value="">Chargement...</option></select></div>
+            <div><label>Limite</label><input id="historyLimit" type="number" value="50" /></div>
+          </div>
+          <button class="btn btn-secondary" onclick="exec('getHistory')">Charger l'historique</button>
+          <pre id="res-getHistory">{}</pre>
+        </div>
+      </div>
+
+      <!-- SOCIAL SECTION -->
+      <div id="section-social" class="section">
+        <div class="panel">
+          <h2>👥 Social & Amis</h2>
+
+          <h3>🔍 Rechercher des Utilisateurs</h3>
+          <input type="search" id="userSearchInput" placeholder="Nom, prénom ou email..."
+                 style="width: 100%; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 12px;" />
+          <div id="userSearchResults" style="margin-bottom: 24px;"></div>
+
+          <h3>👫 Ma Liste d'Amis</h3>
+          <button class="btn btn-secondary" onclick="loadFriendsList()">Rafraîchir</button>
+          <div id="friendsList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">📩 Demandes d'Amis en Attente</h3>
+          <button class="btn btn-secondary" onclick="loadPendingRequests()">Rafraîchir</button>
+          <div id="pendingRequestsList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">🚫 Utilisateurs Bloqués</h3>
+          <button class="btn btn-secondary" onclick="loadBlockedUsers()">Rafraîchir</button>
+          <div id="blockedUsersList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">💬 Mes Conversations</h3>
+          <button class="btn btn-secondary" onclick="loadConversationsList()">Rafraîchir</button>
+          <div id="conversationsList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">📊 Statistiques Messages</h3>
+          <button class="btn btn-secondary" onclick="loadUnreadCount()">Compter les non lus</button>
+          <div id="unreadCountDisplay" style="margin-top: 12px; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px;"></div>
+        </div>
+      </div>
+
+      <!-- GROUPS SECTION -->
+      <div id="section-groups" class="section">
+        <div class="panel">
+          <h2>💬 Groupes</h2>
+
+          <h3>➕ Créer un Nouveau Groupe</h3>
+          <label>Nom du groupe</label>
+          <input id="groupName" placeholder="Groupe Investisseurs" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px;" />
+          <label>Description</label>
+          <textarea id="groupDescription" placeholder="Groupe pour discuter des stratégies d'investissement" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px; min-height: 80px;"></textarea>
+          <label>Visibilité</label>
+          <select id="groupVisibility" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 8px;">
+            <option value="public">Public</option>
+            <option value="private">Privé</option>
+          </select>
+          <button class="btn btn-primary" onclick="createNewGroup()">Créer le groupe</button>
+          <div id="res-createGroup" class="result"></div>
+
+          <h3 style="margin-top: 24px;">🌐 Découvrir des Groupes Publics</h3>
+          <button class="btn btn-secondary" onclick="loadPublicGroups()">Rafraîchir</button>
+          <div id="publicGroupsList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">👨‍👩‍👦 Mes Groupes</h3>
+          <button class="btn btn-secondary" onclick="loadMyGroups()">Rafraîchir</button>
+          <div id="myGroupsList" style="margin-top: 12px;"></div>
+
+          <h3 style="margin-top: 24px;">💬 Chat de Groupe</h3>
+          <select id="activeGroupSelector" onchange="selectActiveGroup(this.value)" style="width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 12px;">
+            <option value="">-- Sélectionner un groupe --</option>
+          </select>
+          <div id="groupChatContainer" style="display: none;">
+            <div id="groupChatMessages" style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); min-height: 300px; max-height: 400px; overflow-y: auto; margin-bottom: 12px;"></div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="groupChatInput" placeholder="Tapez votre message..." style="flex: 1; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text);" onkeypress="if(event.key==='Enter') sendGroupChatMessage()" />
+              <button class="btn btn-primary" onclick="sendGroupChatMessage()">Envoyer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES SECTION -->
+      <div id="section-messages" class="section">
+        <div class="panel" style="min-height: 600px; display: flex; flex-direction: column;">
+          <h2>✉️ Messagerie avec votre Conseiller</h2>
+          
+          <div style="display: flex; gap: 12px; align-items: center; padding: 12px; background: rgba(56, 189, 248, 0.1); border-radius: 8px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;">SL</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">Sophie Laurent</div>
+              <div style="font-size: 11px; color: var(--muted);"><span style="width: 6px; height: 6px; background: #34d399; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>Votre conseillère - En ligne</div>
+            </div>
+          </div>
+
+          <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 12px; max-height: 400px;">
+            <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 12px;">
+              <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+              <div>Bienvenue ! Envoyez votre premier message</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="chatInput" placeholder="Tapez votre message..." style="flex: 1; padding: 12px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 13px;" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+            <button class="btn btn-primary" onclick="sendChatMessage()" style="padding: 12px 24px;">Envoyer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/backend-toggle.js"></script>
+  <script src="client-complete.js"></script>
+  <script>
+    // ========== AUTHENTICATION HELPER ==========
+    function getToken() {
+      return localStorage.getItem('userToken');
+    }
+
+    function getClientInfo() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      return { id: userInfo.id, email: userInfo.email };
+    }
+
+    // ========== MESSAGING SYSTEM ==========
+    let chatMessages = [];
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const content = input.value.trim();
+      if (!content) return;
+
+      const time = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+      
+      // Message du client
+      chatMessages.push({
+        sender: 'client',
+        content: content,
+        time: time
+      });
+
+      input.value = '';
+      renderChatMessages();
+
+      // Réponse auto du conseiller après 2 secondes
+      setTimeout(() => {
+        const responses = [
+          "Bonjour ! Je regarde votre demande et je reviens vers vous dans un instant.",
+          "Merci pour votre message. Comment puis-je vous aider aujourd'hui ?",
+          "J'ai bien reçu votre demande. Je vérifie les informations.",
+          "Parfait ! Je m'occupe de cela immédiatement.",
+          "Bien noté. Je consulte votre dossier et je vous réponds rapidement."
+        ];
+        chatMessages.push({
+          sender: 'advisor',
+          content: responses[Math.floor(Math.random() * responses.length)],
+          time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+        });
+        renderChatMessages();
+      }, 2000);
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById('chatMessages');
+      
+      if (chatMessages.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 12px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+            <div>Bienvenue ! Envoyez votre premier message</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = chatMessages.map(msg => {
+        const isClient = msg.sender === 'client';
+        return `
+          <div style="margin-bottom: 12px; display: flex; gap: 8px; ${isClient ? 'flex-direction: row-reverse;' : ''}">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: ${isClient ? 'linear-gradient(135deg, #34d399, #10b981)' : 'linear-gradient(135deg, #667eea, #764ba2)'}; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; flex-shrink: 0;">
+              ${isClient ? 'ME' : 'SL'}
+            </div>
+            <div>
+              <div style="padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; max-width: 400px; background: ${isClient ? 'linear-gradient(135deg, #34d399, #10b981)' : 'var(--card)'}; color: ${isClient ? '#0b1221' : 'var(--text)'}; border: ${isClient ? 'none' : '1px solid var(--border)'};">
+                ${msg.content}
+              </div>
+              <div style="font-size: 10px; color: var(--muted); margin-top: 2px; padding: 0 4px;">
+                ${msg.time}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Initialiser avec message de bienvenue
+    document.addEventListener('DOMContentLoaded', () => {
+      chatMessages.push({
+        sender: 'advisor',
+        content: "Bonjour ! Je suis Sophie Laurent, votre conseillère. Comment puis-je vous aider aujourd'hui ?",
+        time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+      });
+
+      // Charger les comptes pour tous les sélecteurs
+      loadAccountsForSelectors();
+    });
+
+    // Système de chargement des comptes pour les dropdowns
+    async function loadAccountsForSelectors() {
+      try {
+        const clientId = getClientInfo()?.id;
+        if (!clientId) return;
+
+        const response = await fetch(`/clients/${clientId}/accounts`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const accounts = data.accounts || [];
+
+        // Remplir tous les sélecteurs de comptes
+        const selectors = document.querySelectorAll('.account-selector');
+        selectors.forEach(select => {
+          if (accounts.length === 0) {
+            select.innerHTML = '<option value="">Aucun compte - Créez-en un d\'abord</option>';
+          } else {
+            select.innerHTML = '<option value="">-- Sélectionnez un compte --</option>' +
+              accounts.map(acc => 
+                `<option value="${acc.id}">${acc.name || 'Compte'} - ${acc.balance?.toFixed(2) || '0.00'}€</option>`
+              ).join('');
+          }
+        });
+      } catch (err) {
+        console.error('Erreur chargement comptes:', err);
+      }
+    }
+
+    // Recharger les comptes après création
+    const originalShowSection = window.showSection;
+    window.showSection = function(section) {
+      originalShowSection(section);
+      if (['savings', 'transactions'].includes(section)) {
+        loadAccountsForSelectors();
+      }
+    };
+
+    // ============================================
+    // SECTION 1: PROFIL - User Browser Functions
+    // ============================================
+
+    async function loadUserBrowser() {
+      try {
+        const response = await fetch('/users/public', {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const users = Array.isArray(data) ? data : (data.users || data.data || []);
+
+        const container = document.getElementById('userBrowser');
+
+        if (users.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun utilisateur public trouvé</p>';
+          return;
+        }
+
+        container.innerHTML = users.map(user => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;"
+               onmouseover="this.style.borderColor='var(--accent)'"
+               onmouseout="this.style.borderColor='var(--border)'"
+               onclick="viewUserProfile('${user.id}')">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; color: #0b1221; font-weight: 700; font-size: 14px;">
+                ${(user.firstName?.[0] || '?').toUpperCase()}${(user.lastName?.[0] || '').toUpperCase()}
+              </div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 14px;">${user.firstName || 'N/A'} ${user.lastName || 'N/A'}</div>
+                <div style="color: var(--muted); font-size: 11px;">${user.email || 'N/A'}</div>
+              </div>
+            </div>
+            <button class="btn btn-small btn-secondary" style="width: 100%; margin-top: 4px; font-size: 11px;" onclick="event.stopPropagation(); viewUserProfile('${user.id}')">
+              👁️ Voir le profil
+            </button>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${users.length} utilisateurs chargés`);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des utilisateurs:', error);
+        document.getElementById('userBrowser').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">
+            ❌ Erreur: ${error.message}
+          </p>
+        `;
+      }
+    }
+
+    async function viewUserProfile(userId) {
+      try {
+        const response = await fetch(`/users/${userId}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const user = await response.json();
+        document.getElementById('res-getUserById').textContent = JSON.stringify(user, null, 2);
+
+        // Scroll to result
+        document.getElementById('res-getUserById').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        console.log('✅ Profil utilisateur chargé:', user.id);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement du profil:', error);
+        document.getElementById('res-getUserById').textContent = JSON.stringify({
+          error: error.message
+        }, null, 2);
+      }
+    }
+
+    // ============================================
+    // SECTION 2: STOCKS - Stocks Table Functions
+    // ============================================
+
+    async function loadStocksTable() {
+      try {
+        const response = await fetch('/stocks', {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const stocks = Array.isArray(data) ? data : (data.stocks || data.data || []);
+
+        const container = document.getElementById('stocksTableContainer');
+
+        if (stocks.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucune action trouvée</p>';
+          return;
+        }
+
+        container.innerHTML = `
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: var(--panel); border-bottom: 2px solid var(--border);">
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Symbole</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Nom</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Société</th>
+                <th style="padding: 12px; text-align: center; font-weight: 600;">Statut</th>
+                <th style="padding: 12px; text-align: center; font-weight: 600;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${stocks.map(stock => `
+                <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;"
+                    onmouseover="this.style.background='var(--panel)'"
+                    onmouseout="this.style.background='transparent'">
+                  <td style="padding: 12px;">
+                    <strong style="color: var(--accent);">${stock.symbol || 'N/A'}</strong>
+                  </td>
+                  <td style="padding: 12px;">${stock.name || 'N/A'}</td>
+                  <td style="padding: 12px; color: var(--muted);">${stock.companyName || 'N/A'}</td>
+                  <td style="padding: 12px; text-align: center;">
+                    <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+                          background: ${stock.isAvailable ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)'};
+                          color: ${stock.isAvailable ? 'var(--success)' : 'var(--danger)'};
+                          border: 1px solid ${stock.isAvailable ? 'rgba(52, 211, 153, 0.3)' : 'rgba(248, 113, 113, 0.3)'};">
+                      ${stock.isAvailable ? '✓ Disponible' : '✗ Indisponible'}
+                    </span>
+                  </td>
+                  <td style="padding: 12px; text-align: center;">
+                    <button class="btn btn-small btn-secondary" style="font-size: 11px;" onclick="viewStockDetails('${stock.id}')">
+                      👁️ Voir détails
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+        console.log(`✅ ${stocks.length} actions chargées`);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des actions:', error);
+        document.getElementById('stocksTableContainer').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">
+            ❌ Erreur: ${error.message}
+          </p>
+        `;
+      }
+    }
+
+    async function viewStockDetails(stockId) {
+      try {
+        const response = await fetch(`/stocks/${stockId}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const stock = await response.json();
+        document.getElementById('res-getStockById').textContent = JSON.stringify(stock, null, 2);
+
+        // Scroll to result
+        document.getElementById('res-getStockById').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        console.log('✅ Détails de l\'action chargés:', stock.symbol);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des détails:', error);
+        document.getElementById('res-getStockById').textContent = JSON.stringify({
+          error: error.message
+        }, null, 2);
+      }
+    }
+
+    // ============================================
+    // SECTION 3: ORDRES - Orders Management Functions
+    // ============================================
+
+    async function loadMyOrders() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo || !clientInfo.id) {
+          throw new Error('Client non authentifié');
+        }
+
+        const response = await fetch(`/orders/my/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const orders = Array.isArray(data) ? data : (data.orders || []);
+
+        const container = document.getElementById('myOrdersList');
+
+        if (orders.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun ordre trouvé</p>';
+          return;
+        }
+
+        // Filter only pending orders
+        const pendingOrders = orders.filter(order => order.status === 'PENDING' || order.status === 'pending');
+
+        if (pendingOrders.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun ordre en attente</p>';
+          return;
+        }
+
+        container.innerHTML = pendingOrders.map(order => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <div>
+                <div style="font-weight: 600; font-size: 14px;">
+                  <span style="color: var(--accent);">${order.stockSymbol || 'N/A'}</span>
+                  <span style="margin: 0 8px;">•</span>
+                  <span style="color: ${order.orderType === 'BUY' || order.orderType === 'buy' ? 'var(--success)' : 'var(--danger)'};">
+                    ${order.orderType === 'BUY' || order.orderType === 'buy' ? '📈 ACHAT' : '📉 VENTE'}
+                  </span>
+                </div>
+                <div style="color: var(--muted); font-size: 12px; margin-top: 4px;">
+                  ${order.stockName || 'Stock'}
+                </div>
+              </div>
+              <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+                    background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3);">
+                ⏳ EN ATTENTE
+              </span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; padding: 8px; background: var(--panel); border-radius: 6px; font-size: 12px;">
+              <div>
+                <div style="color: var(--muted); font-size: 11px;">Quantité</div>
+                <div style="font-weight: 600;">${order.quantity} action(s)</div>
+              </div>
+              <div>
+                <div style="color: var(--muted); font-size: 11px;">Prix</div>
+                <div style="font-weight: 600;">${order.price?.toFixed(2) || '0.00'}€</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width: 100%; font-size: 12px;"
+                    onclick="executeOrderById('${order.id}', ${order.price})">
+              ✅ Exécuter l'ordre
+            </button>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${pendingOrders.length} ordres en attente chargés`);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des ordres:', error);
+        document.getElementById('myOrdersList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">
+            ❌ Erreur: ${error.message}
+          </p>
+        `;
+      }
+    }
+
+    async function executeOrderById(orderId, defaultPrice) {
+      try {
+        const executionPrice = parseFloat(prompt(`Prix d'exécution (€):`, defaultPrice));
+
+        if (isNaN(executionPrice) || executionPrice <= 0) {
+          alert('❌ Prix invalide');
+          return;
+        }
+
+        const response = await fetch(`/orders/${orderId}/execute`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ executionPrice })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        alert('✅ Ordre exécuté avec succès !');
+
+        console.log('✅ Ordre exécuté:', result);
+
+        // Reload orders list
+        loadMyOrders();
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'exécution:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function loadStocksForDropdown() {
+      try {
+        const response = await fetch('/stocks', {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const stocks = Array.isArray(data) ? data : (data.stocks || data.data || []);
+
+        const select = document.getElementById('priceStockDropdown');
+        select.innerHTML = '<option value="">-- Sélectionner une action --</option>' +
+          stocks.map(stock =>
+            `<option value="${stock.id}">${stock.symbol} - ${stock.name}</option>`
+          ).join('');
+
+        console.log(`✅ ${stocks.length} actions chargées dans le dropdown`);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des actions:', error);
+      }
+    }
+
+    async function calculatePriceFromDropdown() {
+      try {
+        const stockId = document.getElementById('priceStockDropdown').value;
+
+        if (!stockId) {
+          alert('⚠️ Veuillez sélectionner une action');
+          return;
+        }
+
+        const response = await fetch(`/orders/stock/${stockId}/price`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        document.getElementById('res-getStockPrice').textContent = JSON.stringify(result, null, 2);
+
+        console.log('✅ Prix calculé:', result);
+      } catch (error) {
+        console.error('❌ Erreur lors du calcul du prix:', error);
+        document.getElementById('res-getStockPrice').textContent = JSON.stringify({
+          error: error.message
+        }, null, 2);
+      }
+    }
+
+    // Auto-load stocks dropdown when orders section is shown
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStocksForDropdown();
+    });
+
+    // ============================================
+    // SECTION 4: SOCIAL - Social Functions
+    // ============================================
+
+    // Live user search with debouncing
+    let userSearchTimeout;
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('userSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          clearTimeout(userSearchTimeout);
+          const query = e.target.value.trim();
+
+          if (query.length < 2) {
+            document.getElementById('userSearchResults').innerHTML = '';
+            return;
+          }
+
+          userSearchTimeout = setTimeout(() => searchUsers(query), 300);
+        });
+      }
+    });
+
+    async function searchUsers(query) {
+      try {
+        const response = await fetch(`/users/search?q=${encodeURIComponent(query)}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const users = Array.isArray(data) ? data : (data.users || []);
+
+        const container = document.getElementById('userSearchResults');
+
+        if (users.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun utilisateur trouvé</p>';
+          return;
+        }
+
+        container.innerHTML = users.map(user => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; color: #0b1221; font-weight: 700; font-size: 13px;">
+                ${(user.firstName?.[0] || '?').toUpperCase()}${(user.lastName?.[0] || '').toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">${user.firstName} ${user.lastName}</div>
+                <div style="color: var(--muted); font-size: 11px;">${user.email}</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-small btn-primary" style="font-size: 11px;" onclick="sendFriendRequestTo('${user.id}')">
+                ➕ Ami
+              </button>
+              <button class="btn btn-small btn-secondary" style="font-size: 11px;" onclick="openMessageModal('${user.id}', '${user.firstName} ${user.lastName}')">
+                ✉️ Message
+              </button>
+              <button class="btn btn-small btn-danger" style="font-size: 11px;" onclick="blockUserById('${user.id}')">
+                🚫 Bloquer
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${users.length} utilisateurs trouvés`);
+      } catch (error) {
+        console.error('❌ Erreur recherche utilisateurs:', error);
+        document.getElementById('userSearchResults').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function loadFriendsList() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/friendships/friends/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const friends = Array.isArray(data) ? data : (data.friends || []);
+
+        const container = document.getElementById('friendsList');
+
+        if (friends.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun ami pour le moment</p>';
+          return;
+        }
+
+        container.innerHTML = friends.map(friend => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #34d399, #10b981); display: flex; align-items: center; justify-content: center; color: #0b1221; font-weight: 700; font-size: 13px;">
+                ${(friend.firstName?.[0] || '?').toUpperCase()}${(friend.lastName?.[0] || '').toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">${friend.firstName} ${friend.lastName}</div>
+                <div style="color: var(--muted); font-size: 11px;">${friend.email}</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-small btn-secondary" style="font-size: 11px;" onclick="openConversation('${friend.id}', '${friend.firstName} ${friend.lastName}')">
+                💬 Message
+              </button>
+              <button class="btn btn-small btn-danger" style="font-size: 11px;" onclick="removeFriendById('${friend.id}', '${friend.firstName} ${friend.lastName}')">
+                ❌ Retirer
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${friends.length} amis chargés`);
+      } catch (error) {
+        console.error('❌ Erreur chargement amis:', error);
+        document.getElementById('friendsList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function loadPendingRequests() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/friendships/pending/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const requests = Array.isArray(data) ? data : (data.requests || []);
+
+        const container = document.getElementById('pendingRequestsList');
+
+        if (requests.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucune demande en attente</p>';
+          return;
+        }
+
+        container.innerHTML = requests.map(request => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; color: #0b1221; font-weight: 700; font-size: 13px;">
+                ${(request.firstName?.[0] || '?').toUpperCase()}${(request.lastName?.[0] || '').toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">${request.firstName} ${request.lastName}</div>
+                <div style="color: var(--muted); font-size: 11px;">${request.email}</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-small btn-primary" style="font-size: 11px;" onclick="acceptFriendRequest('${request.id}')">
+                ✅ Accepter
+              </button>
+              <button class="btn btn-small btn-danger" style="font-size: 11px;" onclick="rejectFriendRequest('${request.id}')">
+                ❌ Refuser
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${requests.length} demandes en attente`);
+      } catch (error) {
+        console.error('❌ Erreur chargement demandes:', error);
+        document.getElementById('pendingRequestsList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function loadBlockedUsers() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/friendships/blocked/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const blocked = Array.isArray(data) ? data : (data.blockedUsers || []);
+
+        const container = document.getElementById('blockedUsersList');
+
+        if (blocked.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun utilisateur bloqué</p>';
+          return;
+        }
+
+        container.innerHTML = blocked.map(user => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f87171, #ef4444); display: flex; align-items: center; justify-content: center; color: #0b1221; font-weight: 700; font-size: 13px;">
+                ${(user.firstName?.[0] || '?').toUpperCase()}${(user.lastName?.[0] || '').toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">${user.firstName} ${user.lastName}</div>
+                <div style="color: var(--muted); font-size: 11px;">${user.email}</div>
+              </div>
+            </div>
+            <button class="btn btn-small btn-secondary" style="font-size: 11px;" onclick="unblockUserById('${user.id}', '${user.firstName} ${user.lastName}')">
+              ✅ Débloquer
+            </button>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${blocked.length} utilisateurs bloqués`);
+      } catch (error) {
+        console.error('❌ Erreur chargement utilisateurs bloqués:', error);
+        document.getElementById('blockedUsersList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function loadConversationsList() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/messages/conversations/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const conversations = Array.isArray(data) ? data : (data.conversations || []);
+
+        const container = document.getElementById('conversationsList');
+
+        if (conversations.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucune conversation</p>';
+          return;
+        }
+
+        container.innerHTML = conversations.map(conv => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; transition: all 0.2s;"
+               onmouseover="this.style.borderColor='var(--accent)'"
+               onmouseout="this.style.borderColor='var(--border)'"
+               onclick="openConversation('${conv.otherUserId}', '${conv.otherUserName}')">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+              <div style="font-weight: 600; font-size: 13px;">${conv.otherUserName}</div>
+              <div style="color: var(--muted); font-size: 10px;">${new Date(conv.lastMessageAt).toLocaleString('fr-FR')}</div>
+            </div>
+            <div style="color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${conv.lastMessage || 'Aucun message'}
+            </div>
+            ${conv.hasUnread ? '<span style="display: inline-block; margin-top: 6px; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: rgba(56, 189, 248, 0.1); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3);">● Nouveau</span>' : ''}
+          </div>
+        `).join('');
+
+        console.log(`✅ ${conversations.length} conversations chargées`);
+      } catch (error) {
+        console.error('❌ Erreur chargement conversations:', error);
+        document.getElementById('conversationsList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function loadUnreadCount() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/messages/unread/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const count = data.count || data.unreadCount || 0;
+
+        document.getElementById('unreadCountDisplay').innerHTML = `
+          <div style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: var(--accent);">${count}</div>
+            <div style="color: var(--muted); font-size: 12px; margin-top: 4px;">Message(s) non lu(s)</div>
+          </div>
+        `;
+
+        console.log(`✅ ${count} messages non lus`);
+      } catch (error) {
+        console.error('❌ Erreur comptage messages:', error);
+        document.getElementById('unreadCountDisplay').innerHTML = `
+          <p style="color: var(--danger); text-align: center;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    // Action Functions
+    async function sendFriendRequestTo(userId) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch('/realtime/friendships/request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            senderId: clientInfo.id,
+            receiverId: userId
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Demande d\'ami envoyée avec succès');
+        console.log('✅ Demande d\'ami envoyée');
+      } catch (error) {
+        console.error('❌ Erreur envoi demande:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function blockUserById(userId) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        if (!confirm('Voulez-vous vraiment bloquer cet utilisateur ?')) return;
+
+        const response = await fetch('/realtime/friendships/block', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            userId: clientInfo.id,
+            blockedUserId: userId
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Utilisateur bloqué avec succès');
+        loadBlockedUsers();
+        console.log('✅ Utilisateur bloqué');
+      } catch (error) {
+        console.error('❌ Erreur blocage:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function unblockUserById(userId, userName) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        if (!confirm(`Débloquer ${userName} ?`)) return;
+
+        const response = await fetch('/realtime/friendships/unblock', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            userId: clientInfo.id,
+            blockedUserId: userId
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Utilisateur débloqué avec succès');
+        loadBlockedUsers();
+        console.log('✅ Utilisateur débloqué');
+      } catch (error) {
+        console.error('❌ Erreur déblocage:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function removeFriendById(friendId, friendName) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        if (!confirm(`Retirer ${friendName} de vos amis ?`)) return;
+
+        const response = await fetch('/realtime/friendships/remove', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            userId: clientInfo.id,
+            friendId
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Ami retiré avec succès');
+        loadFriendsList();
+        console.log('✅ Ami retiré');
+      } catch (error) {
+        console.error('❌ Erreur retrait ami:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function acceptFriendRequest(requestId) {
+      try {
+        const response = await fetch(`/realtime/friendships/${requestId}/accept`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Demande acceptée');
+        loadPendingRequests();
+        loadFriendsList();
+        console.log('✅ Demande acceptée');
+      } catch (error) {
+        console.error('❌ Erreur acceptation:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function rejectFriendRequest(requestId) {
+      try {
+        const response = await fetch(`/realtime/friendships/${requestId}/reject`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Demande refusée');
+        loadPendingRequests();
+        console.log('✅ Demande refusée');
+      } catch (error) {
+        console.error('❌ Erreur refus:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function openMessageModal(userId, userName) {
+      const message = prompt(`Message à envoyer à ${userName}:`);
+      if (!message || !message.trim()) return;
+
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch('/realtime/messages/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            senderId: clientInfo.id,
+            receiverId: userId,
+            content: message.trim()
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Message envoyé avec succès');
+        console.log('✅ Message envoyé');
+      } catch (error) {
+        console.error('❌ Erreur envoi message:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function openConversation(otherUserId, otherUserName) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/messages/conversation/${clientInfo.id}/${otherUserId}?limit=50`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const messages = Array.isArray(data) ? data : (data.messages || []);
+
+        // Display in a simple modal or alert
+        const messageText = messages.length > 0
+          ? messages.map(msg => `[${new Date(msg.createdAt).toLocaleTimeString()}] ${msg.senderName}: ${msg.content}`).join('\n')
+          : 'Aucun message dans cette conversation';
+
+        alert(`Conversation avec ${otherUserName}:\n\n${messageText}`);
+        console.log(`✅ Conversation chargée: ${messages.length} messages`);
+      } catch (error) {
+        console.error('❌ Erreur chargement conversation:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    // ============================================
+    // SECTION 5: GROUPES - Groups Functions
+    // ============================================
+
+    let currentActiveGroupId = null;
+
+    async function createNewGroup() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const name = document.getElementById('groupName').value.trim();
+        const description = document.getElementById('groupDescription').value.trim();
+        const visibility = document.getElementById('groupVisibility').value;
+
+        if (!name) {
+          alert('⚠️ Le nom du groupe est requis');
+          return;
+        }
+
+        const response = await fetch('/realtime/groups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            name,
+            description,
+            visibility,
+            creatorId: clientInfo.id
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        alert('✅ Groupe créé avec succès !');
+        document.getElementById('groupName').value = '';
+        document.getElementById('groupDescription').value = '';
+        loadMyGroups();
+        console.log('✅ Groupe créé:', result);
+      } catch (error) {
+        console.error('❌ Erreur création groupe:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function loadPublicGroups() {
+      try {
+        const response = await fetch('/realtime/groups/public', {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const groups = Array.isArray(data) ? data : (data.groups || []);
+
+        const container = document.getElementById('publicGroupsList');
+
+        if (groups.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Aucun groupe public trouvé</p>';
+          return;
+        }
+
+        container.innerHTML = groups.map(group => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${group.name}</div>
+                <div style="color: var(--muted); font-size: 12px; margin-bottom: 6px;">${group.description || 'Aucune description'}</div>
+                <div style="display: flex; gap: 12px; font-size: 11px; color: var(--muted);">
+                  <span>👤 ${group.memberCount || 0} membres</span>
+                  <span>👨‍💼 Créé par ${group.creatorName || 'Inconnu'}</span>
+                </div>
+              </div>
+              <button class="btn btn-small btn-primary" style="font-size: 11px;" onclick="joinGroupById('${group.id}')">
+                ➕ Rejoindre
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${groups.length} groupes publics chargés`);
+      } catch (error) {
+        console.error('❌ Erreur chargement groupes publics:', error);
+        document.getElementById('publicGroupsList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function loadMyGroups() {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/groups/my/${clientInfo.id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const groups = Array.isArray(data) ? data : (data.groups || []);
+
+        // Update dropdown
+        const selector = document.getElementById('activeGroupSelector');
+        selector.innerHTML = '<option value="">-- Sélectionner un groupe --</option>' +
+          groups.map(g => `<option value="${g.id}">${g.name}${g.isAdmin ? ' (Admin)' : ''}</option>`).join('');
+
+        // Display as cards
+        const container = document.getElementById('myGroupsList');
+
+        if (groups.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); padding: 12px;">Vous n\'appartenez à aucun groupe</p>';
+          return;
+        }
+
+        container.innerHTML = groups.map(group => `
+          <div style="background: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                  ${group.name}
+                  ${group.isAdmin ? '<span style="margin-left: 6px; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: rgba(251, 191, 36, 0.1); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">ADMIN</span>' : ''}
+                </div>
+                <div style="color: var(--muted); font-size: 12px; margin-bottom: 6px;">${group.description || 'Aucune description'}</div>
+                <div style="display: flex; gap: 12px; font-size: 11px; color: var(--muted);">
+                  <span>👤 ${group.memberCount || 0} membres</span>
+                  <span>🌐 ${group.visibility === 'public' ? 'Public' : 'Privé'}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="btn btn-small btn-secondary" style="font-size: 11px;" onclick="viewGroupMembers('${group.id}', ${group.isAdmin})">
+                👥 Membres
+              </button>
+              ${group.isAdmin ? `
+                <button class="btn btn-small btn-primary" style="font-size: 11px;" onclick="showInviteModal('${group.id}')">
+                  ➕ Inviter
+                </button>
+              ` : ''}
+              <button class="btn btn-small btn-danger" style="font-size: 11px;" onclick="leaveGroupById('${group.id}', '${group.name}')">
+                🚪 Quitter
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        console.log(`✅ ${groups.length} groupes chargés`);
+      } catch (error) {
+        console.error('❌ Erreur chargement mes groupes:', error);
+        document.getElementById('myGroupsList').innerHTML = `
+          <p style="color: var(--danger); padding: 12px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function selectActiveGroup(groupId) {
+      currentActiveGroupId = groupId;
+
+      if (!groupId) {
+        document.getElementById('groupChatContainer').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('groupChatContainer').style.display = 'block';
+      await loadGroupMessages(groupId);
+    }
+
+    async function loadGroupMessages(groupId) {
+      try {
+        const response = await fetch(`/realtime/groups/${groupId}/messages?limit=100`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const messages = Array.isArray(data) ? data : (data.messages || []);
+
+        const container = document.getElementById('groupChatMessages');
+        const clientInfo = getClientInfo();
+
+        if (messages.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 20px;">Aucun message dans ce groupe</p>';
+          return;
+        }
+
+        container.innerHTML = messages.map(msg => {
+          const isOwn = msg.senderId === clientInfo.id;
+          return `
+            <div style="margin-bottom: 12px; display: flex; gap: 8px; ${isOwn ? 'flex-direction: row-reverse;' : ''}">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: ${isOwn ? 'linear-gradient(135deg, #34d399, #10b981)' : 'linear-gradient(135deg, #667eea, #764ba2)'}; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; flex-shrink: 0;">
+                ${(msg.senderName?.[0] || '?').toUpperCase()}
+              </div>
+              <div style="max-width: 70%;">
+                <div style="font-size: 11px; font-weight: 600; margin-bottom: 4px; ${isOwn ? 'text-align: right;' : ''}">${msg.senderName || 'Inconnu'}</div>
+                <div style="padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; background: ${isOwn ? 'linear-gradient(135deg, #34d399, #10b981)' : 'var(--panel)'}; color: ${isOwn ? '#0b1221' : 'var(--text)'}; border: ${isOwn ? 'none' : '1px solid var(--border)'};">
+                  ${msg.content || ''}
+                </div>
+                <div style="font-size: 10px; color: var(--muted); margin-top: 2px; ${isOwn ? 'text-align: right;' : ''}">
+                  ${new Date(msg.createdAt).toLocaleTimeString('fr-FR')}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+        console.log(`✅ ${messages.length} messages chargés`);
+      } catch (error) {
+        console.error('❌ Erreur chargement messages:', error);
+        document.getElementById('groupChatMessages').innerHTML = `
+          <p style="color: var(--danger); text-align: center; padding: 20px;">❌ Erreur: ${error.message}</p>
+        `;
+      }
+    }
+
+    async function sendGroupChatMessage() {
+      try {
+        if (!currentActiveGroupId) {
+          alert('⚠️ Sélectionnez un groupe');
+          return;
+        }
+
+        const input = document.getElementById('groupChatInput');
+        const content = input.value.trim();
+
+        if (!content) return;
+
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/groups/${currentActiveGroupId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            senderId: clientInfo.id,
+            content
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        input.value = '';
+        await loadGroupMessages(currentActiveGroupId);
+        console.log('✅ Message envoyé');
+      } catch (error) {
+        console.error('❌ Erreur envoi message:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function joinGroupById(groupId) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        const response = await fetch(`/realtime/groups/${groupId}/join`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            userId: clientInfo.id
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Groupe rejoint avec succès !');
+        loadPublicGroups();
+        loadMyGroups();
+        console.log('✅ Groupe rejoint');
+      } catch (error) {
+        console.error('❌ Erreur rejoindre groupe:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function leaveGroupById(groupId, groupName) {
+      try {
+        const clientInfo = getClientInfo();
+        if (!clientInfo?.id) throw new Error('Client non authentifié');
+
+        if (!confirm(`Quitter le groupe "${groupName}" ?`)) return;
+
+        const response = await fetch(`/realtime/groups/${groupId}/leave`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            userId: clientInfo.id
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Groupe quitté avec succès');
+        loadMyGroups();
+        console.log('✅ Groupe quitté');
+      } catch (error) {
+        console.error('❌ Erreur quitter groupe:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function viewGroupMembers(groupId, isAdmin) {
+      try {
+        const response = await fetch(`/realtime/groups/${groupId}/members`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const members = Array.isArray(data) ? data : (data.members || []);
+
+        let memberText = members.map(member => {
+          let role = member.role === 'owner' ? '(Propriétaire)' : member.role === 'admin' ? '(Admin)' : '';
+          return `${member.firstName} ${member.lastName} ${role}`;
+        }).join('\n');
+
+        if (isAdmin) {
+          memberText += '\n\nℹ️ En tant qu\'admin, utilisez les boutons "Inviter" et gérez les membres individuellement.';
+        }
+
+        alert(`Membres du groupe:\n\n${memberText || 'Aucun membre'}`);
+        console.log(`✅ ${members.length} membres affichés`);
+      } catch (error) {
+        console.error('❌ Erreur affichage membres:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+
+    async function showInviteModal(groupId) {
+      const userId = prompt('ID de l\'utilisateur à inviter:');
+      if (!userId || !userId.trim()) return;
+
+      try {
+        const response = await fetch(`/realtime/groups/${groupId}/invite`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            userId: userId.trim()
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        alert('✅ Invitation envoyée avec succès');
+        console.log('✅ Invitation envoyée');
+      } catch (error) {
+        console.error('❌ Erreur invitation:', error);
+        alert(`❌ Erreur: ${error.message}`);
+      }
+    }
+  </script>
+  <script src="ui-components.js"></script>
+</body>
+</html>

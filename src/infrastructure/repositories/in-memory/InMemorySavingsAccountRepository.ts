@@ -20,6 +20,11 @@ export class InMemorySavingsAccountRepository
     return accounts.find((acc) => acc.accountId === accountId) || null;
   }
 
+  async findByAccountIds(accountIds: string[]): Promise<SavingsAccount[]> {
+    const accounts = Array.from(this.accounts.values());
+    return accounts.filter((acc) => accountIds.includes(acc.accountId));
+  }
+
   async findAll(): Promise<SavingsAccount[]> {
     return Array.from(this.accounts.values());
   }

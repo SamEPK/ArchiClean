@@ -29,6 +29,7 @@ describe('SendFriendRequestUseCase', () => {
         firstName: 'User',
         lastName: 'Two',
         isEmailConfirmed: true,
+        isBanned: false,
         createdAt: new Date(),
       });
       await clientRepository.create(addressee);
@@ -68,6 +69,7 @@ describe('SendFriendRequestUseCase', () => {
         firstName: 'User',
         lastName: 'Two',
         isEmailConfirmed: true,
+        isBanned: false,
         createdAt: new Date(),
       });
       await clientRepository.create(addressee);
@@ -98,6 +100,7 @@ describe('SendFriendRequestUseCase', () => {
         firstName: 'User',
         lastName: 'Two',
         isEmailConfirmed: true,
+        isBanned: false,
         createdAt: new Date(),
       });
       await clientRepository.create(addressee);
@@ -117,8 +120,8 @@ describe('SendFriendRequestUseCase', () => {
 
     it('should generate unique friendship IDs', async () => {
       // Arrange - Create clients
-      const user2 = new Client({ id: 'user2', email: 'user2@example.com', password: 'hashedPassword', firstName: 'User', lastName: 'Two', isEmailConfirmed: true, createdAt: new Date() });
-      const user4 = new Client({ id: 'user4', email: 'user4@example.com', password: 'hashedPassword', firstName: 'User', lastName: 'Four', isEmailConfirmed: true, createdAt: new Date() });
+      const user2 = new Client({ id: 'user2', email: 'user2@example.com', password: 'hashedPassword', firstName: 'User', lastName: 'Two', isEmailConfirmed: true, isBanned: false, createdAt: new Date() });
+      const user4 = new Client({ id: 'user4', email: 'user4@example.com', password: 'hashedPassword', firstName: 'User', lastName: 'Four', isEmailConfirmed: true, isBanned: false, createdAt: new Date() });
       await clientRepository.create(user2);
       await clientRepository.create(user4);
 
@@ -143,6 +146,7 @@ describe('SendFriendRequestUseCase', () => {
         firstName: 'User',
         lastName: 'Two',
         isEmailConfirmed: true,
+        isBanned: false,
         createdAt: new Date(),
       });
       await clientRepository.create(addressee);

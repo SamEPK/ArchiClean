@@ -1,8 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 import { StockController } from '../controllers/StockController';
-import { InMemoryStockRepository } from '@infrastructure/repositories/in-memory/InMemoryStockRepository';
+import { RepositoryFactory } from '@infrastructure/repositories/RepositoryFactory';
 
-const stockRepo = new InMemoryStockRepository();
+const factory = RepositoryFactory.getInstance();
+const stockRepo = factory.getStockRepository();
 const controller = new StockController(stockRepo);
 
 export const stockRoutes: FastifyPluginAsync = async (fastify) => {

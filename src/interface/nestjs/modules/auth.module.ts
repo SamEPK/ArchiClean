@@ -40,6 +40,35 @@ import { FileUploadService } from '../../../infrastructure/services/FileUploadSe
 // Repositories
 import { MongoUserRepository } from '../../../infrastructure/repositories/mongodb/MongoUserRepository';
 import { UserSchema } from '../../../infrastructure/repositories/mongodb/UserModel';
+import { InMemoryUserRepository } from '../../../infrastructure/repositories/in-memory/InMemoryUserRepository';
+
+const forceInMemory = (process.env.USE_IN_MEMORY || '').toLowerCase() === 'true' || process.env.USE_IN_MEMORY === '1';
+const mongoUri = forceInMemory ? undefined : process.env.MONGODB_URI || process.env.MONGO_URI;
+const mongoImports = mongoUri
+  ? [
+      MongooseModule.forRootAsync({
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          uri:
+            configService.get<string>('MONGODB_URI') ||
+            configService.get<string>('MONGO_URI') ||
+            'mongodb://admin:admin123@localhost:27017/archiclean?authSource=admin',
+        }),
+        inject: [ConfigService],
+      }),
+      MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    ]
+  : [];
+
+  const mongoProviders = mongoUri
+    ? [
+        {
+          provide: 'IUserRepository',
+          useClass: MongoUserRepository,
+        },
+        MongoUserRepository,
+      ]
+    : [];
 
 @Module({
   imports: [
@@ -47,14 +76,7 @@ import { UserSchema } from '../../../infrastructure/repositories/mongodb/UserMod
       isGlobal: true,
       envFilePath: '.env',
     }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI') || 'mongodb://admin:admin123@localhost:27017/archiclean?authSource=admin',
-      }),
-      inject: [ConfigService],
-    }),
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    ...mongoImports,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -110,100 +132,109 @@ import { UserSchema } from '../../../infrastructure/repositories/mongodb/UserMod
     },
 
     // Repositories
-    {
-      provide: 'IUserRepository',
-      useClass: MongoUserRepository,
-    },
-    MongoUserRepository,
+    ...mongoProviders,
+    ...(mongoUri
+      ? []
+      : [
+          {
+            provide: 'IUserRepository',
+            useClass: InMemoryUserRepository,
+          },
+          InMemoryUserRepository,
+        ]),
 
     // Use Cases - Auth
     {
       provide: RegisterUserUseCase,
       useFactory: (
-        userRepository: MongoUserRepository,
+        userRepository: any,
         hashService: HashService,
         emailService: EmailService
       ) => {
         return new RegisterUserUseCase(userRepository, hashService, emailService);
       },
-      inject: [MongoUserRepository, HashService, EmailService],
+      inject: ['IUserRepository', HashService, EmailService],
     },
     {
       provide: LoginUserUseCase,
-      useFactory: (userRepository: MongoUserRepository, hashService: HashService) => {
+      useFactory: (userRepository: any, hashService: HashService) => {
         return new LoginUserUseCase(userRepository, hashService);
       },
-      inject: [MongoUserRepository, HashService],
+      inject: ['IUserRepository', HashService],
     },
     {
       provide: ConfirmUserEmailUseCase,
-      useFactory: (userRepository: MongoUserRepository, emailService: EmailService) => {
+      useFactory: (userRepository: any, emailService: EmailService) => {
         return new ConfirmUserEmailUseCase(userRepository, emailService);
       },
-      inject: [MongoUserRepository, EmailService],
+      inject: ['IUserRepository', EmailService],
     },
     {
       provide: RefreshTokenUseCase,
-      useFactory: (userRepository: MongoUserRepository) => {
+      useFactory: (userRepository: any) => {
         return new RefreshTokenUseCase(userRepository);
       },
-      inject: [MongoUserRepository],
+      inject: ['IUserRepository'],
     },
     {
       provide: LogoutUserUseCase,
-      useFactory: (userRepository: MongoUserRepository) => {
+      useFactory: (userRepository: any) => {
         return new LogoutUserUseCase(userRepository);
       },
-      inject: [MongoUserRepository],
+      inject: ['IUserRepository'],
     },
 
     // Use Cases - User Profile
     {
       provide: UpdateProfileUseCase,
-      useFactory: (userRepository: MongoUserRepository) => {
+      useFactory: (userRepository: any) => {
         return new UpdateProfileUseCase(userRepository);
       },
-      inject: [MongoUserRepository],
+      inject: ['IUserRepository'],
     },
     {
       provide: GetProfileUseCase,
-      useFactory: (userRepository: MongoUserRepository) => {
+      useFactory: (userRepository: any) => {
         return new GetProfileUseCase(userRepository);
       },
-      inject: [MongoUserRepository],
+      inject: ['IUserRepository'],
     },
     {
       provide: UploadAvatarUseCase,
       useFactory: (
-        userRepository: MongoUserRepository,
+        userRepository: any,
         fileUploadService: FileUploadService
       ) => {
         return new UploadAvatarUseCase(userRepository, fileUploadService);
       },
-      inject: [MongoUserRepository, FileUploadService],
+      inject: ['IUserRepository', FileUploadService],
     },
     {
       provide: GetPublicProfilesUseCase,
-      useFactory: (userRepository: MongoUserRepository) => {
+      useFactory: (userRepository: any) => {
         return new GetPublicProfilesUseCase(userRepository);
       },
-      inject: [MongoUserRepository],
+      inject: ['IUserRepository'],
     },
     {
       provide: SearchUsersUseCase,
-      useFactory: (userRepository: MongoUserRepository) => {
+      useFactory: (userRepository: any) => {
         return new SearchUsersUseCase(userRepository);
       },
-      inject: [MongoUserRepository],
+      inject: ['IUserRepository'],
     },
   ],
   exports: [
     JwtModule,
+    PassportModule,
+    JwtStrategy,
+    JwtRefreshStrategy,
     HashService,
     EmailService,
     FileUploadService,
-    MongoUserRepository,
+    ...(mongoUri ? [MongoUserRepository] : [InMemoryUserRepository]),
     JwtAuthGuard,
+    LocalAuthGuard,
     RolesGuard,
   ],
 })

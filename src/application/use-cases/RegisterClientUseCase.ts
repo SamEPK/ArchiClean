@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcryptjs';
 import { Client } from '@domain/entities/Client';
 import { IClientRepository } from '@domain/repositories/IClientRepository';
+import { CreateBankAccountUseCase } from './CreateBankAccountUseCase';
 
 export interface IEmailService {
   sendConfirmationEmail(email: string, token: string, clientName: string): Promise<void>;
@@ -9,7 +10,8 @@ export interface IEmailService {
 export class RegisterClientUseCase {
   constructor(
     private clientRepository: IClientRepository,
-    private emailService: IEmailService
+    private emailService: IEmailService,
+    private createBankAccountUseCase: CreateBankAccountUseCase,
   ) {}
 
   async execute(
@@ -44,13 +46,22 @@ export class RegisterClientUseCase {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       phoneNumber: phoneNumber?.trim(),
-      isEmailConfirmed: false,
+      isEmailConfirmed: true,
+      isBanned: false,
       createdAt: new Date(),
     });
 
     const confirmationToken = client.generateEmailConfirmationToken();
 
     await this.clientRepository.create(client);
+
+    // Créer un compte courant par défaut
+    await this.createBankAccountUseCase.execute(
+      client.id,
+      'Compte Courant',
+      0,
+      'EUR',
+    );
 
     try {
       await this.emailService.sendConfirmationEmail(client.email, confirmationToken, client.getFullName());

@@ -1,10 +1,11 @@
 import { FastifyPluginAsync } from 'fastify';
 import { SavingsController } from '../controllers/SavingsController';
-import { InMemorySavingsAccountRepository } from '@infrastructure/repositories/in-memory/InMemorySavingsAccountRepository';
+import { RepositoryFactory } from '@infrastructure/repositories/RepositoryFactory';
 import { OpenSavingsAccountUseCase } from '@application/use-cases/OpenSavingsAccountUseCase';
 import { ApplyDailyInterestUseCase } from '@application/use-cases/ApplyDailyInterestUseCase';
 
-const savingsAccountRepo = new InMemorySavingsAccountRepository();
+const factory = RepositoryFactory.getInstance();
+const savingsAccountRepo = factory.getSavingsAccountRepository();
 const openSavingsAccountUseCase = new OpenSavingsAccountUseCase(
   savingsAccountRepo,
 );

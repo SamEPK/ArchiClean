@@ -10,6 +10,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SendPrivateMessageUseCase } from '@application/use-cases/SendPrivateMessageUseCase';
 import { SendGroupMessageUseCase } from '@application/use-cases/SendGroupMessageUseCase';
+import { SendMessage } from '@application/use-cases/SendMessage';
+import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -21,18 +24,39 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   constructor(
     private sendPrivateMessageUseCase: SendPrivateMessageUseCase,
-    private sendGroupMessageUseCase: SendGroupMessageUseCase
+    private sendGroupMessageUseCase: SendGroupMessageUseCase,
+    private sendMessageUseCase: SendMessage,
+    private jwtService: JwtService,
   ) {}
 
   handleConnection(client: Socket) {
-    const userId = client.handshake.query.userId as string;
-    if (userId) {
+    const token = (client.handshake.auth as any)?.token || (client.handshake.query?.token as string);
+    console.log('🔗 Socket connection attempt with token:', token ? 'present' : 'missing');
+    
+    try {
+      if (!token) {
+        throw new UnauthorizedException('No token provided');
+      }
+
+      const payload = this.jwtService.verify(token);
+      const userId = payload.sub as string;
+      const userRole = payload.role as string;
+      
+      if (!userId) throw new UnauthorizedException('Invalid token payload');
+
       this.connectedUsers.set(userId, client.id);
       client.join(`user_${userId}`);
 
       // Notify others that user is online
       this.server.emit('user:status', { userId, status: 'online' });
-      console.log(`User ${userId} connected (${client.id})`);
+      client.data.userId = userId;
+      client.data.userRole = userRole;
+      
+      console.log(`✅ User ${userId} (${userRole}) connected (${client.id})`);
+    } catch (err) {
+      console.error('❌ Socket auth error:', err);
+      client.emit('error', { message: 'Unauthorized' });
+      client.disconnect(true);
     }
   }
 
@@ -51,7 +75,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @MessageBody() data: { receiverId: string; content: string }
   ) {
     try {
-      const senderId = client.handshake.query.userId as string;
+      const senderId = client.data.userId as string;
       const message = await this.sendPrivateMessageUseCase.execute(senderId, data.receiverId, data.content);
 
       // Send to receiver
@@ -74,7 +98,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @MessageBody() data: { groupId: string; content: string }
   ) {
     try {
-      const senderId = client.handshake.query.userId as string;
+      const senderId = client.data.userId as string;
       const message = await this.sendGroupMessageUseCase.execute(data.groupId, senderId, data.content);
 
       // Broadcast to all group members
@@ -93,7 +117,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { receiverId: string }
   ) {
-    const senderId = client.handshake.query.userId as string;
+    const senderId = client.data.userId as string;
 
     if (!this.typingUsers.has(data.receiverId)) {
       this.typingUsers.set(data.receiverId, new Set());
@@ -112,7 +136,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { receiverId: string }
   ) {
-    const senderId = client.handshake.query.userId as string;
+    const senderId = client.data.userId as string;
 
     if (this.typingUsers.has(data.receiverId)) {
       this.typingUsers.get(data.receiverId)!.delete(senderId);
@@ -130,7 +154,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { groupId: string }
   ) {
-    const userId = client.handshake.query.userId as string;
+    const userId = client.data.userId as string;
 
     // Broadcast to group
     this.server.to(`group_${data.groupId}`).emit('group:typing', {
@@ -145,7 +169,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { groupId: string }
   ) {
-    const userId = client.handshake.query.userId as string;
+    const userId = client.data.userId as string;
 
     // Broadcast to group
     this.server.to(`group_${data.groupId}`).emit('group:typing', {
@@ -170,6 +194,101 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @MessageBody() data: { groupId: string }
   ) {
     client.leave(`group_${data.groupId}`);
+    return { success: true };
+  }
+
+  // ===== CLIENT-ADVISOR CHAT =====
+  @SubscribeMessage('client:message')
+  async handleClientMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string; content: string }
+  ) {
+    try {
+      const clientId = client.data.userId as string;
+
+      // Save message to conversation
+      await this.sendMessageUseCase.execute({
+        conversationId: data.conversationId,
+        senderId: clientId,
+        content: data.content,
+        senderRole: 'client',
+      });
+
+      // Join conversation room for real-time updates
+      client.join(`conversation_${data.conversationId}`);
+
+      // Broadcast to all advisors (they will see it in their open conversations list)
+      this.server.emit('new:client-message', {
+        conversationId: data.conversationId,
+        clientId,
+        content: data.content,
+        createdAt: new Date().toISOString(),
+      });
+
+      console.log(`💬 Client ${clientId} sent message to conversation ${data.conversationId}`);
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Client message error:', message);
+      client.emit('error', { message });
+      return { success: false, error: message };
+    }
+  }
+
+  @SubscribeMessage('advisor:message')
+  async handleAdvisorMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string; content: string }
+  ) {
+    try {
+      const advisorId = client.data.userId as string;
+
+      // Save message to conversation
+      await this.sendMessageUseCase.execute({
+        conversationId: data.conversationId,
+        senderId: advisorId,
+        content: data.content,
+        senderRole: 'advisor',
+      });
+
+      // Join conversation room
+      client.join(`conversation_${data.conversationId}`);
+
+      // Send to client (conversation ID is the client ID)
+      this.server.to(`user_${data.conversationId}`).emit('advisor:message', {
+        senderId: advisorId,
+        content: data.content,
+        createdAt: new Date().toISOString(),
+      });
+
+      console.log(`💬 Advisor ${advisorId} sent message to conversation ${data.conversationId}`);
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Advisor message error:', message);
+      client.emit('error', { message });
+      return { success: false, error: message };
+    }
+  }
+
+  @SubscribeMessage('advisor:typing')
+  handleAdvisorTyping(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string; isTyping: boolean }
+  ) {
+    // Notify client (conversation ID is the client ID)
+    this.server.to(`user_${data.conversationId}`).emit('advisor:typing', {
+      isTyping: data.isTyping,
+    });
+  }
+
+  @SubscribeMessage('join:conversation')
+  handleJoinConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string }
+  ) {
+    client.join(`conversation_${data.conversationId}`);
+    console.log(`👤 User ${client.data.userId} joined conversation ${data.conversationId}`);
     return { success: true };
   }
 

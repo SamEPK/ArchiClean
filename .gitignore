@@ -5,3 +5,6 @@ coverage/
 *.log
 .DS_Store
 .vscode/
+
+# Persistent data (messages saved on disk)
+data/

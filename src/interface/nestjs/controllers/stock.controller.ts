@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Inject } from '@nestjs/common';
+import { Controller, Get, Param, Inject, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { IStockRepository } from '@domain/repositories/IStockRepository';
 
-@ApiTags('stocks')
+@ApiTags('Stocks')
 @Controller('stocks')
 export class StockController {
   constructor(
@@ -11,27 +11,27 @@ export class StockController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all stocks' })
-  @ApiResponse({ status: 200, description: 'List of all stocks' })
+  @ApiOperation({ summary: 'Lister toutes les actions', description: 'Récupérer la liste complète des actions disponibles dans le système' })
+  @ApiResponse({ status: 200, description: 'Liste de toutes les actions' })
   async getAllStocks() {
     return await this.stockRepository.findAll();
   }
 
   @Get('available')
-  @ApiOperation({ summary: 'Get available stocks for trading' })
-  @ApiResponse({ status: 200, description: 'List of available stocks' })
+  @ApiOperation({ summary: 'Actions disponibles', description: 'Récupérer uniquement les actions disponibles pour l\'achat/vente' })
+  @ApiResponse({ status: 200, description: 'Liste des actions disponibles' })
   async getAvailableStocks() {
     return await this.stockRepository.findAvailable();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get stock by ID' })
-  @ApiResponse({ status: 200, description: 'Stock details' })
-  @ApiResponse({ status: 404, description: 'Stock not found' })
+  @ApiOperation({ summary: 'Détails d\'une action', description: 'Récupérer les informations détaillées d\'une action par son ID' })
+  @ApiResponse({ status: 200, description: 'Détails de l\'action' })
+  @ApiResponse({ status: 404, description: 'Action introuvable' })
   async getStockById(@Param('id') id: string) {
     const stock = await this.stockRepository.findById(id);
     if (!stock) {
-      throw new Error('Stock not found');
+      throw new NotFoundException('Stock not found');
     }
     return stock;
   }

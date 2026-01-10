@@ -1,22 +1,50 @@
 import { ExecuteOrderUseCase } from '../ExecuteOrderUseCase';
 import { InMemoryOrderRepository } from '@infrastructure/repositories/in-memory/InMemoryOrderRepository';
 import { InMemoryPortfolioRepository } from '@infrastructure/repositories/in-memory/InMemoryPortfolioRepository';
+import { InMemoryBankAccountRepository } from '@infrastructure/repositories/in-memory/InMemoryBankAccountRepository';
+import { InMemoryTransactionRepository } from '@infrastructure/repositories/in-memory/InMemoryTransactionRepository';
 import { Order, OrderType, OrderStatus } from '@domain/entities/Order';
+import { BankAccount } from '@domain/entities/BankAccount';
 
 describe('ExecuteOrderUseCase', () => {
   let useCase: ExecuteOrderUseCase;
   let orderRepository: InMemoryOrderRepository;
   let portfolioRepository: InMemoryPortfolioRepository;
+  let bankAccountRepository: InMemoryBankAccountRepository;
+  let transactionRepository: InMemoryTransactionRepository;
+  let settlementAccount: BankAccount;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     orderRepository = new InMemoryOrderRepository();
     portfolioRepository = new InMemoryPortfolioRepository();
-    useCase = new ExecuteOrderUseCase(orderRepository, portfolioRepository);
+    bankAccountRepository = new InMemoryBankAccountRepository();
+    transactionRepository = new InMemoryTransactionRepository();
+
+    settlementAccount = new BankAccount({
+      id: 'acc_1',
+      clientId: 'user_1',
+      iban: 'IBAN123',
+      accountName: 'Main',
+      balance: 10_000,
+      currency: 'EUR',
+      isActive: true,
+      createdAt: new Date(),
+    });
+    await bankAccountRepository.create(settlementAccount);
+
+    useCase = new ExecuteOrderUseCase(
+      orderRepository,
+      portfolioRepository,
+      bankAccountRepository,
+      transactionRepository,
+    );
   });
 
   afterEach(() => {
     orderRepository.clear();
     portfolioRepository.clear();
+    bankAccountRepository.clear();
+    transactionRepository.clear();
   });
 
   it('should execute a buy order and update portfolio', async () => {
@@ -28,6 +56,9 @@ describe('ExecuteOrderUseCase', () => {
       10,
       150,
       OrderStatus.PENDING,
+      new Date(),
+      undefined,
+      settlementAccount.id,
     );
     await orderRepository.save(order);
 
@@ -56,6 +87,9 @@ describe('ExecuteOrderUseCase', () => {
       5,
       150,
       OrderStatus.PENDING,
+      new Date(),
+      undefined,
+      settlementAccount.id,
     );
     await orderRepository.save(order);
 

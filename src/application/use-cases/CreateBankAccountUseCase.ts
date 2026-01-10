@@ -2,12 +2,43 @@ import { BankAccount } from '@domain/entities/BankAccount';
 import { IBankAccountRepository } from '@domain/repositories/IBankAccountRepository';
 import { IClientRepository } from '@domain/repositories/IClientRepository';
 
+/**
+ * Use Case: Création d'un compte bancaire
+ * 
+ * Responsabilités:
+ * - Vérifier l'existence du client
+ * - Vérifier la confirmation d'email du client
+ * - Valider les paramètres du compte
+ * - Générer un IBAN unique
+ * - Créer et sauvegarder le compte bancaire
+ * 
+ * @application Use Case - Couche Application
+ */
 export class CreateBankAccountUseCase {
+  /**
+   * Constructeur avec injection de dépendances
+   * @param bankAccountRepository - Repository pour la persistance des comptes
+   * @param clientRepository - Repository pour vérifier l'existence du client
+   */
   constructor(
     private bankAccountRepository: IBankAccountRepository,
     private clientRepository: IClientRepository
   ) {}
 
+  /**
+   * Exécute la création d'un compte bancaire
+   * 
+   * @param clientId - Identifiant du client propriétaire
+   * @param accountName - Nom personnalisé du compte
+   * @param initialBalance - Solde initial (par défaut: 0)
+   * @param currency - Devise du compte (par défaut: EUR)
+   * @returns Le compte bancaire créé
+   * @throws {Error} Si le client n'existe pas
+   * @throws {Error} Si l'email du client n'est pas confirmé
+   * @throws {Error} Si le nom du compte est vide
+   * @throws {Error} Si le solde initial est négatif
+   * @throws {Error} Si l'IBAN généré existe déjà (collision)
+   */
   async execute(clientId: string, accountName: string, initialBalance: number = 0, currency: string = 'EUR'): Promise<BankAccount> {
     const client = await this.clientRepository.findById(clientId);
     if (!client) {
@@ -49,6 +80,12 @@ export class CreateBankAccountUseCase {
     return bankAccount;
   }
 
+  /**
+   * Génère un identifiant unique pour le compte
+   * Format: account_[timestamp]_[random]
+   * @returns Identifiant unique
+   * @private
+   */
   private generateId(): string {
     return `account_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }

@@ -10,7 +10,10 @@ export class SendPrivateMessageUseCase {
   constructor(
     private privateMessageRepository: IPrivateMessageRepository,
     private friendshipRepository: IFriendshipRepository,
-    private webSocketNotifier: IWebSocketNotifier
+    private webSocketNotifier: IWebSocketNotifier = {
+      // Default to no-op to avoid hard coupling with WebSocket gateway wiring
+      notifyNewMessage: async () => Promise.resolve(),
+    }
   ) {}
 
   async execute(senderId: string, receiverId: string, content: string): Promise<PrivateMessage> {

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test WebSocket Messaging</title>
+</head>
+<body>
+    <h1>Test de Connexion WebSocket</h1>
+    
+    <div style="margin: 20px;">
+        <h3>1. Connexion Client</h3>
+        <input type="email" id="clientEmail" placeholder="Email client" value="client1@test.com">
+        <input type="password" id="clientPassword" placeholder="Mot de passe" value="password123">
+        <button onclick="loginClient()">Login Client</button>
+        <div id="clientStatus"></div>
+    </div>
+
+    <div style="margin: 20px;">
+        <h3>2. Connexion WebSocket</h3>
+        <button onclick="connectSocket()">Connecter WebSocket</button>
+        <div id="socketStatus"></div>
+    </div>
+
+    <div style="margin: 20px;">
+        <h3>3. Envoyer Message</h3>
+        <input type="text" id="messageInput" placeholder="Message">
+        <button onclick="sendMessage()">Envoyer</button>
+    </div>
+
+    <div style="margin: 20px;">
+        <h3>Messages reçus:</h3>
+        <div id="messages"></div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        let token = null;
+        let userId = null;
+        let socket = null;
+
+        async function loginClient() {
+            const email = document.getElementById('clientEmail').value;
+            const password = document.getElementById('clientPassword').value;
+            
+            try {
+                const response = await fetch('/api/auth/client/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    token = data.token;
+                    userId = data.client.id;
+                    document.getElementById('clientStatus').innerHTML = 
+                        `✅ Connecté: ${data.client.firstName} ${data.client.lastName} (ID: ${userId})`;
+                } else {
+                    document.getElementById('clientStatus').innerHTML = `❌ Erreur: ${data.message}`;
+                }
+            } catch (error) {
+                document.getElementById('clientStatus').innerHTML = `❌ Erreur: ${error.message}`;
+            }
+        }
+
+        async function connectSocket() {
+            if (!token) {
+                alert('Veuillez d\'abord vous connecter');
+                return;
+            }
+
+            try {
+                socket = io('http://localhost:3000', {
+                    auth: { token },
+                    transports: ['websocket', 'polling']
+                });
+
+                socket.on('connect', () => {
+                    document.getElementById('socketStatus').innerHTML = '✅ WebSocket connecté';
+                    console.log('✅ WebSocket connecté');
+                });
+
+                socket.on('disconnect', () => {
+                    document.getElementById('socketStatus').innerHTML = '❌ WebSocket déconnecté';
+                    console.log('❌ WebSocket déconnecté');
+                });
+
+                socket.on('connect_error', (error) => {
+                    document.getElementById('socketStatus').innerHTML = `❌ Erreur: ${error.message}`;
+                    console.error('❌ Erreur WebSocket:', error);
+                });
+
+                socket.on('error', (error) => {
+                    document.getElementById('socketStatus').innerHTML = `❌ Erreur: ${error.message}`;
+                    console.error('❌ Erreur Socket:', error);
+                });
+
+                socket.on('advisor:message', (data) => {
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.innerHTML += `<div><strong>Advisor:</strong> ${data.content} <em>(${new Date(data.createdAt).toLocaleTimeString()})</em></div>`;
+                });
+
+            } catch (error) {
+                document.getElementById('socketStatus').innerHTML = `❌ Erreur: ${error.message}`;
+            }
+        }
+
+        function sendMessage() {
+            if (!socket || !socket.connected) {
+                alert('WebSocket non connecté');
+                return;
+            }
+
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            socket.emit('client:message', {
+                conversationId: userId,
+                content: message
+            });
+
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML += `<div><strong>Vous:</strong> ${message} <em>(${new Date().toLocaleTimeString()})</em></div>`;
+            
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>

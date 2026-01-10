@@ -23,6 +23,7 @@ describe('ApplyDailyInterestUseCase', () => {
       'sa_1',
       'acc_123',
       0.05,
+      100,
       yesterday,
     );
     await repository.save(savingsAccount);
@@ -36,7 +37,13 @@ describe('ApplyDailyInterestUseCase', () => {
   it('should not apply interest if last interest date is today', async () => {
     const today = new Date();
 
-    const savingsAccount = new SavingsAccount('sa_1', 'acc_123', 0.05, today);
+    const savingsAccount = new SavingsAccount(
+      'sa_1',
+      'acc_123',
+      0.05,
+      100,
+      today,
+    );
     await repository.save(savingsAccount);
 
     const result = await useCase.execute({ currentDate: today });
@@ -49,8 +56,8 @@ describe('ApplyDailyInterestUseCase', () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 2);
 
-    const account1 = new SavingsAccount('sa_1', 'acc_1', 0.05, yesterday);
-    const account2 = new SavingsAccount('sa_2', 'acc_2', 0.03, yesterday);
+    const account1 = new SavingsAccount('sa_1', 'acc_1', 0.05, 50, yesterday);
+    const account2 = new SavingsAccount('sa_2', 'acc_2', 0.03, 75, yesterday);
 
     await repository.save(account1);
     await repository.save(account2);

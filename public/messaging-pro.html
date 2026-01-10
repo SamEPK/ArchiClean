@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messagerie Professionnelle - Banque AVENIR</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --dark: #1e293b;
+      --panel: #0f172a;
+      --border: rgba(148, 163, 184, 0.25);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .nav {
+      background: var(--panel);
+      padding: 16px 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav h1 {
+      font-size: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge.connected {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .status-badge.disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .connected .status-dot {
+      background: var(--success);
+    }
+
+    .disconnected .status-dot {
+      background: var(--danger);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 300px 1fr 350px;
+      gap: 20px;
+      height: calc(100vh - 80px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      overflow-y: auto;
+    }
+
+    .panel h2 {
+      font-size: 16px;
+      margin-bottom: 16px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .conversations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .conversation-item {
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .conversation-item:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateX(4px);
+    }
+
+    .conversation-item.active {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+      border-left-color: var(--primary);
+    }
+
+    .conv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .conv-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .conv-time {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .conv-preview {
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .badge-new {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+
+    .badge-assigned {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-info h3 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .chat-info p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .message {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .message.sent {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .message-content {
+      max-width: 60%;
+    }
+
+    .message-bubble {
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+    }
+
+    .message.received .message-bubble {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .message.sent .message-bubble {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .message-meta {
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+    }
+
+    .message.sent .message-meta {
+      justify-content: flex-end;
+    }
+
+    .message-input-area {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .message-input-area input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .message-input-area input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .stats-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .chart-container {
+      background: rgba(255,255,255,0.03);
+      padding: 16px;
+      border-radius: 8px;
+      height: 250px;
+    }
+
+    .advisors-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .advisor-item {
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .advisor-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .advisor-item.online {
+      border-left: 3px solid var(--success);
+    }
+
+    .advisor-name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .advisor-status {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .advisor-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .typing-indicator {
+      display: none;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .typing-indicator.show {
+      display: block;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--panel);
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid var(--border);
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--primary);
+    }
+
+    .modal-body {
+      margin-bottom: 16px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h1>💬 Messagerie Professionnelle - Banque AVENIR</h1>
+    <div id="connectionStatus" class="status-badge disconnected">
+      <span class="status-dot"></span>
+      <span>Déconnecté</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Panneau des conversations -->
+    <div class="panel">
+      <h2>📨 Conversations</h2>
+      <div id="conversationsList" class="conversations-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">💭</div>
+          <p>Aucune conversation</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone de chat -->
+    <div class="panel chat-container">
+      <div id="chatView" class="empty-state">
+        <div class="empty-state-icon">💬</div>
+        <h3>Sélectionnez une conversation</h3>
+        <p>Choisissez une conversation dans la liste pour commencer</p>
+      </div>
+    </div>
+
+    <!-- Panneau statistiques -->
+    <div class="panel stats-panel">
+      <div>
+        <h2>📊 Statistiques Temps Réel</h2>
+        <div class="stat-card">
+          <div class="stat-label">Conversations actives</div>
+          <div class="stat-value" id="activeConvCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Messages aujourd'hui</div>
+          <div class="stat-value" id="todayMessageCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Temps de réponse moyen</div>
+          <div class="stat-value" id="avgResponseTime">-</div>
+        </div>
+      </div>
+
+      <div>
+        <h2>📈 Activité (dernières 24h)</h2>
+        <div class="chart-container">
+          <canvas id="activityChart"></canvas>
+        </div>
+      </div>
+
+      <div>
+        <h2>👥 Conseillers en ligne</h2>
+        <div id="advisorsList" class="advisors-list">
+          <div class="empty-state">
+            <p style="font-size: 12px;">Aucun conseiller connecté</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de transfert -->
+  <div id="transferModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">Transférer la conversation</div>
+      <div class="modal-body">
+        <p style="color: var(--muted); margin-bottom: 12px; font-size: 13px;">
+          Sélectionnez le conseiller qui prendra en charge cette conversation
+        </p>
+        <select id="transferAdvisorSelect">
+          <option value="">Chargement des conseillers...</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTransferModal()">Annuler</button>
+        <button class="btn btn-primary" onclick="confirmTransfer()">Transférer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === ÉTAT GLOBAL ===
+    let socket = null;
+    let currentUser = null;
+    let selectedConversation = null;
+    let conversations = [];
+    let advisors = [];
+    let activityChart = null;
+
+    // === INITIALISATION ===
+    async function init() {
+      try {
+        // Connexion automatique (simulation)
+        currentUser = {
+          name: 'Sophie Laurent',
+          role: 'advisor',
+          email: 'sophie.laurent@bankavenir.fr'
+        };
+
+        // Charger les données initiales
+        await loadConversations();
+        await loadAdvisors();
+        
+        // Initialiser le chart
+        initChart();
+        
+        // Connecter WebSocket
+        connectWebSocket();
+        
+        // Simuler des données en temps réel
+        simulateRealTimeData();
+      } catch (err) {
+        console.error('Erreur initialisation:', err);
+      }
+    }
+
+    // === WEBSOCKET ===
+    function connectWebSocket() {
+      // Simulation de connexion WebSocket
+      setTimeout(() => {
+        updateConnectionStatus(true);
+        console.log('WebSocket connecté (simulation)');
+      }, 1000);
+    }
+
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connectionStatus');
+      statusEl.className = `status-badge ${connected ? 'connected' : 'disconnected'}`;
+      statusEl.querySelector('span:last-child').textContent = connected ? 'Connecté' : 'Déconnecté';
+    }
+
+    // === CONVERSATIONS ===
+    async function loadConversations() {
+      // Simulation de chargement de conversations
+      conversations = [
+        {
+          id: 'conv1',
+          clientName: 'Marie Dubois',
+          clientEmail: 'marie.dubois@email.fr',
+          subject: 'Demande de crédit immobilier',
+          preview: 'Bonjour, je souhaiterais obtenir un crédit pour...',
+          time: '10:30',
+          status: 'new',
+          unread: 3
+        },
+        {
+          id: 'conv2',
+          clientName: 'Pierre Martin',
+          clientEmail: 'pierre.martin@email.fr',
+          subject: 'Question sur mon compte épargne',
+          preview: 'J\'ai une question concernant les intérêts...',
+          time: '09:15',
+          status: 'assigned',
+          unread: 0
+        },
+        {
+          id: 'conv3',
+          clientName: 'Julie Bernard',
+          clientEmail: 'julie.bernard@email.fr',
+          subject: 'Problème carte bancaire',
+          preview: 'Ma carte a été refusée ce matin...',
+          time: 'Hier',
+          status: 'new',
+          unread: 1
+        },
+        {
+          id: 'conv4',
+          clientName: 'Thomas Petit',
+          clientEmail: 'thomas.petit@email.fr',
+          subject: 'Rendez-vous conseiller',
+          preview: 'Pourriez-vous me proposer un rendez-vous ?',
+          time: 'Hier',
+          status: 'assigned',
+          unread: 0
+        }
+      ];
+
+      renderConversations();
+      updateStats();
+    }
+
+    function renderConversations() {
+      const container = document.getElementById('conversationsList');
+      
+      if (conversations.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">💭</div>
+            <p>Aucune conversation</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = conversations.map(conv => `
+        <div class="conversation-item ${selectedConversation?.id === conv.id ? 'active' : ''}" 
+             onclick="selectConversation('${conv.id}')">
+          <div class="conv-header">
+            <span class="conv-name">${conv.clientName}</span>
+            <span class="conv-time">${conv.time}</span>
+          </div>
+          <div class="conv-preview">${conv.subject}</div>
+          <div class="conv-preview">${conv.preview}</div>
+          ${conv.status === 'new' ? '<span class="badge badge-new">Nouveau</span>' : ''}
+          ${conv.status === 'assigned' ? '<span class="badge badge-assigned">Assignée</span>' : ''}
+          ${conv.unread > 0 ? `<span class="badge badge-new">${conv.unread} non lu${conv.unread > 1 ? 's' : ''}</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function selectConversation(convId) {
+      selectedConversation = conversations.find(c => c.id === convId);
+      renderConversations();
+      renderChat();
+    }
+
+    function renderChat() {
+      const chatView = document.getElementById('chatView');
+      
+      if (!selectedConversation) {
+        chatView.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <h3>Sélectionnez une conversation</h3>
+            <p>Choisissez une conversation dans la liste pour commencer</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Messages simulés
+      const messages = [
+        { sender: selectedConversation.clientName, content: selectedConversation.preview, time: selectedConversation.time, type: 'received' },
+        { sender: currentUser.name, content: 'Bonjour ! Je prends en charge votre demande. Comment puis-je vous aider ?', time: '10:32', type: 'sent' },
+        { sender: selectedConversation.clientName, content: 'Merci pour votre réponse rapide. J\'aimerais en savoir plus sur les conditions.', time: '10:35', type: 'received' }
+      ];
+
+      chatView.innerHTML = `
+        <div class="chat-header">
+          <div class="chat-info">
+            <h3>${selectedConversation.clientName}</h3>
+            <p>${selectedConversation.subject}</p>
+          </div>
+          <div class="chat-actions">
+            ${selectedConversation.status === 'new' ? `
+              <button class="btn btn-primary" onclick="assignToMe()">
+                ✓ M'assigner
+              </button>
+            ` : ''}
+            <button class="btn btn-secondary" onclick="openTransferModal()">
+              ↗ Transférer
+            </button>
+          </div>
+        </div>
+
+        <div class="messages-area" id="messagesArea">
+          ${messages.map(msg => `
+            <div class="message ${msg.type}">
+              <div class="message-avatar">
+                ${msg.sender.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div class="message-content">
+                <div class="message-bubble">${msg.content}</div>
+                <div class="message-meta">
+                  <span>${msg.sender}</span>
+                  <span>${msg.time}</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+          ${selectedConversation.clientName} est en train d'écrire...
+        </div>
+
+        <div class="message-input-area">
+          <input type="text" placeholder="Tapez votre message..." 
+                 onkeypress="handleMessageKeyPress(event)" 
+                 id="messageInput" />
+          <button class="btn btn-primary" onclick="sendMessage()">
+            Envoyer
+          </button>
+        </div>
+      `;
+
+      // Scroll en bas
+      const messagesArea = document.getElementById('messagesArea');
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function handleMessageKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const content = input.value.trim();
+      
+      if (!content) return;
+
+      // Simuler l'envoi
+      const messagesArea = document.getElementById('messagesArea');
+      messagesArea.innerHTML += `
+        <div class="message sent">
+          <div class="message-avatar">${currentUser.name.split(' ').map(n => n[0]).join('')}</div>
+          <div class="message-content">
+            <div class="message-bubble">${content}</div>
+            <div class="message-meta">
+              <span>${currentUser.name}</span>
+              <span>${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      input.value = '';
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+
+      // Mettre à jour les stats
+      updateStats();
+    }
+
+    function assignToMe() {
+      if (!selectedConversation) return;
+      
+      selectedConversation.status = 'assigned';
+      renderConversations();
+      renderChat();
+      
+      // Notification
+      showNotification('Conversation assignée avec succès', 'success');
+    }
+
+    // === TRANSFER MODAL ===
+    function openTransferModal() {
+      document.getElementById('transferModal').classList.add('show');
+      loadAdvisorsForTransfer();
+    }
+
+    function closeTransferModal() {
+      document.getElementById('transferModal').classList.remove('show');
+    }
+
+    function loadAdvisorsForTransfer() {
+      const select = document.getElementById('transferAdvisorSelect');
+      select.innerHTML = advisors
+        .filter(a => a.name !== currentUser.name)
+        .map(a => `<option value="${a.id}">${a.name} - ${a.activeConv} conversation${a.activeConv > 1 ? 's' : ''}</option>`)
+        .join('');
+    }
+
+    function confirmTransfer() {
+      const selectedAdvisor = document.getElementById('transferAdvisorSelect').value;
+      
+      if (!selectedAdvisor) {
+        showNotification('Veuillez sélectionner un conseiller', 'error');
+        return;
+      }
+
+      const advisor = advisors.find(a => a.id === selectedAdvisor);
+      
+      // Simuler le transfert
+      closeTransferModal();
+      showNotification(`Conversation transférée à ${advisor.name}`, 'success');
+      
+      // Retirer la conversation
+      conversations = conversations.filter(c => c.id !== selectedConversation.id);
+      selectedConversation = null;
+      renderConversations();
+      renderChat();
+      updateStats();
+    }
+
+    // === ADVISORS ===
+    async function loadAdvisors() {
+      advisors = [
+        { id: 'adv1', name: 'Sophie Laurent', status: 'online', activeConv: 4 },
+        { id: 'adv2', name: 'Marc Durand', status: 'online', activeConv: 2 },
+        { id: 'adv3', name: 'Julie Moreau', status: 'online', activeConv: 3 },
+        { id: 'adv4', name: 'Paul Richard', status: 'offline', activeConv: 0 }
+      ];
+
+      renderAdvisors();
+    }
+
+    function renderAdvisors() {
+      const container = document.getElementById('advisorsList');
+      const onlineAdvisors = advisors.filter(a => a.status === 'online');
+
+      if (onlineAdvisors.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p style="font-size: 12px;">Aucun conseiller connecté</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = onlineAdvisors.map(adv => `
+        <div class="advisor-item ${adv.status}">
+          <div>
+            <div class="advisor-name">${adv.name}</div>
+            <div class="advisor-status">${adv.status === 'online' ? '🟢 En ligne' : '⚫ Hors ligne'}</div>
+          </div>
+          <div class="advisor-count">${adv.activeConv}</div>
+        </div>
+      `).join('');
+    }
+
+    // === STATS ===
+    function updateStats() {
+      document.getElementById('activeConvCount').textContent = conversations.length;
+      document.getElementById('todayMessageCount').textContent = Math.floor(Math.random() * 50 + 120);
+      document.getElementById('avgResponseTime').textContent = Math.floor(Math.random() * 10 + 5) + 'min';
+    }
+
+    // === CHART ===
+    function initChart() {
+      const ctx = document.getElementById('activityChart').getContext('2d');
+      
+      activityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['00h', '04h', '08h', '12h', '16h', '20h'],
+          datasets: [{
+            label: 'Messages',
+            data: [12, 8, 25, 45, 38, 22],
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(148, 163, 184, 0.1)'
+              },
+              ticks: {
+                color: '#94a3b8'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#94a3b8'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // === TEMPS RÉEL ===
+    function simulateRealTimeData() {
+      setInterval(() => {
+        // Mettre à jour le chart
+        if (activityChart) {
+          const lastValue = activityChart.data.datasets[0].data[activityChart.data.datasets[0].data.length - 1];
+          activityChart.data.datasets[0].data.push(lastValue + Math.floor(Math.random() * 10 - 5));
+          activityChart.data.datasets[0].data.shift();
+          activityChart.update('none');
+        }
+
+        // Mettre à jour les stats
+        updateStats();
+      }, 5000);
+
+      // Simuler un nouveau message de temps en temps
+      setInterval(() => {
+        if (Math.random() > 0.7) {
+          const typingEl = document.getElementById('typingIndicator');
+          if (typingEl) {
+            typingEl.classList.add('show');
+            setTimeout(() => {
+              typingEl.classList.remove('show');
+            }, 3000);
+          }
+        }
+      }, 10000);
+    }
+
+    // === NOTIFICATIONS ===
+    function showNotification(message, type = 'info') {
+      // Simplifier pour cette démo
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+
+    // === LANCEMENT ===
+    init();
+  </script>
+</body>
+</html>

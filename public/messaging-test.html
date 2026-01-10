@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Messaging Temps Réel - Banque AVENIR</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .connection-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .chat-area {
+            height: 500px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message.sent {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.received {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .message .timestamp {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #666;
+            padding: 5px;
+            font-size: 13px;
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-list li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .user-list li:hover {
+            background: #e0e0e0;
+        }
+
+        .user-list li.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .event-log {
+            height: 150px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .event-log .event {
+            padding: 3px;
+            margin-bottom: 5px;
+        }
+
+        .event.info {
+            color: #0066cc;
+        }
+
+        .event.success {
+            color: #28a745;
+        }
+
+        .event.error {
+            color: #dc3545;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input input {
+            flex: 1;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Test Messaging Temps Réel - Banque AVENIR</h1>
+            <p>Testez les fonctionnalités de messaging WebSocket : messages privés, groupes, notifications temps réel</p>
+        </header>
+
+        <div class="connection-panel">
+            <h2>Connexion WebSocket</h2>
+            <div class="input-group">
+                <input type="text" id="email" placeholder="Email (ex: alice@test.com)" value="alice@test.com">
+                <input type="password" id="password" placeholder="Mot de passe" value="password123">
+                <button id="loginBtn">Se connecter</button>
+            </div>
+            <div id="status" class="status disconnected">Déconnecté</div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>Utilisateurs & Actions</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('friends')">Amis</button>
+                    <button class="tab" onclick="switchTab('groups')">Groupes</button>
+                </div>
+
+                <div id="friendsTab" class="tab-content active">
+                    <h3 style="margin: 10px 0;">Liste des amis</h3>
+                    <ul id="friendsList" class="user-list">
+                        <li>Aucun ami</li>
+                    </ul>
+
+                    <h3 style="margin: 20px 0 10px 0;">Ajouter un ami</h3>
+                    <div class="input-group">
+                        <input type="text" id="friendEmail" placeholder="Email de l'ami">
+                        <button id="addFriendBtn">Ajouter</button>
+                    </div>
+                </div>
+
+                <div id="groupsTab" class="tab-content">
+                    <h3 style="margin: 10px 0;">Mes groupes</h3>
+                    <ul id="groupsList" class="user-list">
+                        <li>Aucun groupe</li>
+                    </ul>
+
+                    <h3 style="margin: 20px 0 10px 0;">Créer un groupe</h3>
+                    <div class="input-group">
+                        <input type="text" id="groupName" placeholder="Nom du groupe">
+                        <button id="createGroupBtn">Créer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Chat</h2>
+                <div id="chatArea" class="chat-area">
+                    <div style="text-align: center; color: #999; margin-top: 200px;">
+                        Sélectionnez un ami ou un groupe pour commencer
+                    </div>
+                </div>
+                <div id="typingIndicator" class="typing-indicator"></div>
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="Tapez votre message..." disabled>
+                    <button id="sendBtn" disabled>Envoyer</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top: 20px;">
+            <h2>Journal des événements WebSocket</h2>
+            <div id="eventLog" class="event-log"></div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let currentUserId = null;
+        let currentChatId = null;
+        let currentChatType = null; // 'friend' ou 'group'
+        let jwtToken = null;
+
+        function addEvent(message, type = 'info') {
+            const log = document.getElementById('eventLog');
+            const event = document.createElement('div');
+            event.className = `event ${type}`;
+            event.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(event);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const status = document.getElementById('status');
+            status.className = connected ? 'status connected' : 'status disconnected';
+            status.textContent = connected ? '✓ Connecté au WebSocket' : '✗ Déconnecté';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        // Connexion
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // 1. S'inscrire d'abord
+                addEvent('Tentative d\'inscription...', 'info');
+                const registerResponse = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        firstName: email.split('@')[0],
+                        lastName: 'Test',
+                        role: 'user'
+                    })
+                });
+
+                if (registerResponse.ok) {
+                    addEvent('Inscription réussie', 'success');
+                    const data = await registerResponse.json();
+                    currentUserId = data.user.id;
+                } else {
+                    addEvent('Utilisateur existe déjà, tentative de connexion...', 'info');
+                }
+
+                // 2. Se connecter
+                const loginResponse = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!loginResponse.ok) {
+                    addEvent('Échec de connexion', 'error');
+                    return;
+                }
+
+                const loginData = await loginResponse.json();
+                jwtToken = loginData.accessToken;
+                currentUserId = loginData.user.id;
+                addEvent(`Connecté en tant que ${email} (ID: ${currentUserId})`, 'success');
+
+                // 3. Se connecter au WebSocket
+                connectWebSocket();
+
+            } catch (error) {
+                addEvent(`Erreur: ${error.message}`, 'error');
+            }
+        });
+
+        function connectWebSocket() {
+            socket = io('http://localhost:3000', {
+                auth: { token: jwtToken }
+            });
+
+            socket.on('connect', () => {
+                addEvent('WebSocket connecté !', 'success');
+                updateStatus(true);
+                document.getElementById('messageInput').disabled = false;
+            });
+
+            socket.on('disconnect', () => {
+                addEvent('WebSocket déconnecté', 'error');
+                updateStatus(false);
+                document.getElementById('messageInput').disabled = true;
+            });
+
+            socket.on('error', (data) => {
+                addEvent(`Erreur WS: ${data.message}`, 'error');
+            });
+
+            socket.on('user:status', (data) => {
+                addEvent(`${data.userId} est ${data.status}`, 'info');
+            });
+
+            socket.on('receive:private-message', (data) => {
+                addEvent(`Nouveau message privé reçu`, 'success');
+                if (currentChatType === 'friend' && currentChatId === data.message.senderId) {
+                    displayMessage(data.message, false);
+                }
+            });
+
+            socket.on('receive:group-message', (data) => {
+                addEvent(`Nouveau message groupe reçu`, 'success');
+                if (currentChatType === 'group' && currentChatId === data.message.groupId) {
+                    displayMessage(data.message, false);
+                }
+            });
+
+            socket.on('user:typing', (data) => {
+                const indicator = document.getElementById('typingIndicator');
+                indicator.textContent = data.isTyping ? `${data.userId} est en train d'écrire...` : '';
+            });
+
+            socket.on('message:sent', (data) => {
+                addEvent(`Message envoyé (ID: ${data.messageId})`, 'success');
+            });
+        }
+
+        // Envoyer un message
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content || !currentChatId) return;
+
+            if (currentChatType === 'friend') {
+                socket.emit('send:private-message', {
+                    receiverId: currentChatId,
+                    content
+                });
+            } else if (currentChatType === 'group') {
+                socket.emit('send:group-message', {
+                    groupId: currentChatId,
+                    content
+                });
+            }
+
+            displayMessage({ content, senderId: currentUserId }, true);
+            input.value = '';
+        }
+
+        function displayMessage(message, isSent) {
+            const chatArea = document.getElementById('chatArea');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            msgDiv.innerHTML = `
+                <div>${message.content}</div>
+                <div class="timestamp">${new Date().toLocaleTimeString()}</div>
+            `;
+            chatArea.appendChild(msgDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Indicateur de frappe
+        let typingTimeout;
+        document.getElementById('messageInput').addEventListener('input', () => {
+            if (!currentChatId || currentChatType !== 'friend') return;
+
+            socket.emit('typing:start', { receiverId: currentChatId });
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                socket.emit('typing:stop', { receiverId: currentChatId });
+            }, 1000);
+        });
+
+        // Ajouter un ami
+        document.getElementById('addFriendBtn').addEventListener('click', async () => {
+            const friendEmail = document.getElementById('friendEmail').value;
+            // TODO: Implémenter la recherche d'utilisateur et l'ajout d'ami
+            addEvent(`Fonction "Ajouter ami" à implémenter via API REST`, 'info');
+        });
+
+        // Créer un groupe
+        document.getElementById('createGroupBtn').addEventListener('click', async () => {
+            const groupName = document.getElementById('groupName').value;
+            // TODO: Implémenter la création de groupe
+            addEvent(`Fonction "Créer groupe" à implémenter via API REST`, 'info');
+        });
+
+        addEvent('Page chargée. Connectez-vous pour commencer.', 'info');
+    </script>
+</body>
+</html>

@@ -27,19 +27,22 @@ export class ApplyDailyInterestUseCase {
     let totalInterestApplied = 0;
 
     for (const account of accounts) {
-      if (account.shouldApplyInterest(currentDate)) {
-        const interest = this.calculateDailyInterest(
-          account.interestRate,
-          currentDate,
-          account.lastInterestDate,
-        );
-
-        account.updateLastInterestDate(currentDate);
-        await this.savingsAccountRepository.update(account);
-
-        accountsUpdated++;
-        totalInterestApplied += interest;
+      if (!account.shouldApplyInterest(currentDate)) {
+        continue;
       }
+
+      const interest = this.calculateDailyInterest(
+        account.balance,
+        account.interestRate,
+        currentDate,
+        account.lastInterestDate,
+      );
+
+      account.applyInterest(interest, currentDate);
+      await this.savingsAccountRepository.update(account);
+
+      accountsUpdated++;
+      totalInterestApplied += interest;
     }
 
     return {
@@ -49,13 +52,15 @@ export class ApplyDailyInterestUseCase {
   }
 
   private calculateDailyInterest(
+    balance: number,
     annualRate: number,
     currentDate: Date,
     lastDate: Date,
   ): number {
     const days = this.getDaysDifference(lastDate, currentDate);
     const dailyRate = annualRate / 365;
-    return dailyRate * days;
+    const interest = balance * dailyRate * days;
+    return Math.max(0, Math.round(interest * 100) / 100);
   }
 
   private getDaysDifference(from: Date, to: Date): number {

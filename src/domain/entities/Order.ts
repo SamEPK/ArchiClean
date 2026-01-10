@@ -20,6 +20,7 @@ export class Order {
     public status: OrderStatus,
     public readonly createdAt: Date = new Date(),
     public executedAt?: Date,
+    public readonly accountId?: string,
   ) {
     this.validateQuantity();
     this.validatePrice();

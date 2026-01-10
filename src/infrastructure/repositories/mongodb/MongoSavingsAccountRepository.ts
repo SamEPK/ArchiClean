@@ -5,6 +5,7 @@ import { ISavingsAccountRepository } from '@domain/repositories/ISavingsAccountR
 interface SavingsAccountDocument extends Document {
   accountId: string;
   interestRate: number;
+  balance: number;
   lastInterestDate: Date;
   createdAt: Date;
 }
@@ -12,6 +13,7 @@ interface SavingsAccountDocument extends Document {
 const SavingsAccountSchema = new Schema<SavingsAccountDocument>({
   accountId: { type: String, required: true, unique: true },
   interestRate: { type: Number, required: true },
+  balance: { type: Number, required: true },
   lastInterestDate: { type: Date, required: true },
   createdAt: { type: Date, default: Date.now },
 });
@@ -29,6 +31,7 @@ export class MongoSavingsAccountRepository
       doc._id.toString(),
       doc.accountId,
       doc.interestRate,
+      doc.balance,
       doc.lastInterestDate,
       doc.createdAt,
     );
@@ -39,6 +42,7 @@ export class MongoSavingsAccountRepository
       _id: savingsAccount.id,
       accountId: savingsAccount.accountId,
       interestRate: savingsAccount.interestRate,
+      balance: savingsAccount.balance,
       lastInterestDate: savingsAccount.lastInterestDate,
       createdAt: savingsAccount.createdAt,
     });
@@ -56,6 +60,11 @@ export class MongoSavingsAccountRepository
     return doc ? this.toEntity(doc) : null;
   }
 
+  async findByAccountIds(accountIds: string[]): Promise<SavingsAccount[]> {
+    const docs = await SavingsAccountModel.find({ accountId: { $in: accountIds } });
+    return docs.map((doc) => this.toEntity(doc));
+  }
+
   async findAll(): Promise<SavingsAccount[]> {
     const docs = await SavingsAccountModel.find();
     return docs.map((doc) => this.toEntity(doc));
@@ -66,6 +75,7 @@ export class MongoSavingsAccountRepository
       savingsAccount.id,
       {
         interestRate: savingsAccount.interestRate,
+        balance: savingsAccount.balance,
         lastInterestDate: savingsAccount.lastInterestDate,
       },
       { new: true },

@@ -46,15 +46,28 @@ export class GetPortfolioUseCase {
         continue;
       }
 
+      // TODO Phase 2: Add getCurrentPrice() to stock repository for real-time prices
+      // For now, using average purchase price as current price placeholder
+      const currentPrice = portfolio.averagePurchasePrice;
+
+      const totalStockValue = currentPrice * portfolio.quantity;
+      const totalCost = portfolio.averagePurchasePrice * portfolio.quantity;
+      const stockProfit = totalStockValue - totalCost;
+
       const item: PortfolioItem = {
         stockId: portfolio.stockId,
         stockSymbol: stock.symbol,
         stockName: stock.name,
         quantity: portfolio.quantity,
         averagePurchasePrice: portfolio.averagePurchasePrice,
+        currentPrice,
+        totalValue: totalStockValue,
+        profit: stockProfit,
       };
 
       items.push(item);
+      totalValue += totalStockValue;
+      totalProfit += stockProfit;
     }
 
     return {

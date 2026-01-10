@@ -4,6 +4,8 @@ export interface ConversationProps {
   advisorId?: string | null;
   status?: 'open' | 'assigned' | 'closed';
   createdAt?: Date;
+  firstResponderId?: string | null;
+  firstResponseAt?: Date | null;
 }
 
 export class Conversation {
@@ -12,6 +14,8 @@ export class Conversation {
   advisorId?: string | null;
   status: 'open' | 'assigned' | 'closed';
   createdAt: Date;
+  firstResponderId: string | null;
+  firstResponseAt: Date | null;
 
   constructor(props: ConversationProps) {
     this.id = props.id;
@@ -19,5 +23,7 @@ export class Conversation {
     this.advisorId = props.advisorId ?? null;
     this.status = props.status ?? 'open';
     this.createdAt = props.createdAt ?? new Date();
+    this.firstResponderId = props.firstResponderId ?? null;
+    this.firstResponseAt = props.firstResponseAt ?? null;
   }
 }

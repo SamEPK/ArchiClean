@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Dashboard - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --card: #111827;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #38bdf8;
+      --accent-2: #34d399;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(52, 211, 153, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .nav h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    .nav-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .user-info {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .btn-logout {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+      border-color: transparent;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .panel h2 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 10px;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.2);
+      color: var(--danger);
+    }
+    pre {
+      background: #0a1020;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .list-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .list-item h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+    }
+    .list-item p {
+      margin: 4px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .badge-success {
+      background: rgba(52, 211, 153, 0.2);
+      color: var(--accent-2);
+    }
+    .badge-danger {
+      background: rgba(248, 113, 113, 0.2);
+      color: var(--danger);
+    }
+    .badge-info {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--accent);
+    }
+    .status-msg {
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .status-success {
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--accent-2);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .status-error {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h1>🏦 Banque AVENIR - Espace Client</h1>
+    <div class="nav-right">
+      <span class="user-info" id="userInfo">Chargement...</span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('profile')">👤 Profil</div>
+      <div class="tab" onclick="switchTab('accounts')">🏦 Comptes</div>
+      <div class="tab" onclick="switchTab('savings')">💰 Épargne</div>
+      <div class="tab" onclick="switchTab('stocks')">📈 Actions</div>
+      <div class="tab" onclick="switchTab('orders')">📊 Ordres</div>
+      <div class="tab" onclick="switchTab('portfolio')">💼 Portfolio</div>
+      <div class="tab" onclick="switchTab('transactions')">💳 Transactions</div>
+      <div class="tab" onclick="switchTab('social')">👥 Social</div>
+      <div class="tab" onclick="switchTab('groups')">💬 Groupes</div>
+    </div>
+
+    <!-- Profile Tab -->
+    <div id="tab-profile" class="tab-content active">
+      <div class="panel">
+        <h2>Mon Profil</h2>
+        <button class="btn btn-primary" onclick="loadProfile()">Charger mon profil</button>
+        <pre id="profileResult">{}</pre>
+      </div>
+    </div>
+
+    <!-- Bank Accounts Tab -->
+    <div id="tab-accounts" class="tab-content">
+      <div class="panel">
+        <h2>Créer un compte bancaire</h2>
+        <label>Nom du compte</label>
+        <input id="accountName" placeholder="Mon compte principal" />
+        <label>Solde initial (€)</label>
+        <input id="initialBalance" type="number" value="0" />
+        <button class="btn btn-primary" onclick="createBankAccount()">Créer le compte</button>
+        <div id="createAccountStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Mes comptes bancaires</h2>
+        <button class="btn btn-secondary" onclick="loadBankAccounts()">Actualiser</button>
+        <div id="accountsList"></div>
+      </div>
+    </div>
+
+    <!-- Savings Tab -->
+    <div id="tab-savings" class="tab-content">
+      <div class="panel">
+        <h2>Ouvrir un compte d'épargne</h2>
+        <label>Compte bancaire source (IBAN)</label>
+        <input id="savingsSourceIban" placeholder="FR76..." />
+        <label>Montant initial (€)</label>
+        <input id="savingsAmount" type="number" value="1000" />
+        <button class="btn btn-primary" onclick="openSavingsAccount()">Ouvrir le compte d'épargne</button>
+        <div id="savingsStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Mes comptes d'épargne</h2>
+        <button class="btn btn-secondary" onclick="loadSavingsAccounts()">Actualiser</button>
+        <div id="savingsList"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Appliquer les intérêts quotidiens</h2>
+        <p style="color: var(--muted); font-size: 13px;">Simule l'application des intérêts journaliers sur vos comptes d'épargne</p>
+        <button class="btn btn-secondary" onclick="applyDailyInterest()">Appliquer les intérêts</button>
+        <div id="interestStatus"></div>
+      </div>
+    </div>
+
+    <!-- Stocks Tab -->
+    <div id="tab-stocks" class="tab-content">
+      <div class="panel">
+        <h2>Actions disponibles</h2>
+        <button class="btn btn-secondary" onclick="loadStocks()">Actualiser</button>
+        <div id="stocksList"></div>
+      </div>
+    </div>
+
+    <!-- Orders Tab -->
+    <div id="tab-orders" class="tab-content">
+      <div class="panel">
+        <h2>Placer un ordre d'action</h2>
+        <div class="grid">
+          <div>
+            <label>Symbole de l'action</label>
+            <input id="orderSymbol" placeholder="AAPL" />
+          </div>
+          <div>
+            <label>Type d'ordre</label>
+            <select id="orderType">
+              <option value="buy">Achat</option>
+              <option value="sell">Vente</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid">
+          <div>
+            <label>Quantité</label>
+            <input id="orderQuantity" type="number" value="1" />
+          </div>
+          <div>
+            <label>Prix unitaire (€)</label>
+            <input id="orderPrice" type="number" step="0.01" value="150.00" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="placeOrder()">Placer l'ordre</button>
+        <div id="orderStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Mes ordres</h2>
+        <button class="btn btn-secondary" onclick="loadOrders()">Actualiser</button>
+        <div id="ordersList"></div>
+      </div>
+    </div>
+
+    <!-- Portfolio Tab -->
+    <div id="tab-portfolio" class="tab-content">
+      <div class="panel">
+        <h2>Mon Portfolio</h2>
+        <button class="btn btn-secondary" onclick="loadPortfolio()">Actualiser</button>
+        <pre id="portfolioResult">{}</pre>
+      </div>
+    </div>
+
+    <!-- Transactions Tab -->
+    <div id="tab-transactions" class="tab-content">
+      <div class="panel">
+        <h2>Déposer des fonds</h2>
+        <label>IBAN du compte</label>
+        <input id="depositIban" placeholder="FR76..." />
+        <label>Montant (€)</label>
+        <input id="depositAmount" type="number" value="100" />
+        <button class="btn btn-primary" onclick="depositFunds()">Déposer</button>
+        <div id="depositStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Retirer des fonds</h2>
+        <label>IBAN du compte</label>
+        <input id="withdrawIban" placeholder="FR76..." />
+        <label>Montant (€)</label>
+        <input id="withdrawAmount" type="number" value="50" />
+        <button class="btn btn-primary" onclick="withdrawFunds()">Retirer</button>
+        <div id="withdrawStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Transférer des fonds</h2>
+        <div class="grid">
+          <div>
+            <label>IBAN source</label>
+            <input id="transferFromIban" placeholder="FR76..." />
+          </div>
+          <div>
+            <label>IBAN destination</label>
+            <input id="transferToIban" placeholder="FR76..." />
+          </div>
+        </div>
+        <label>Montant (€)</label>
+        <input id="transferAmount" type="number" value="50" />
+        <button class="btn btn-primary" onclick="transferFunds()">Transférer</button>
+        <div id="transferStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Historique des transactions</h2>
+        <button class="btn btn-secondary" onclick="loadTransactions()">Charger l'historique</button>
+        <pre id="transactionsList">{}</pre>
+      </div>
+    </div>
+
+    <!-- Messages Tab -->
+    <div id="tab-messages" class="tab-content">
+      <div class="panel">
+        <h2>Envoyer un message privé</h2>
+        <label>ID du destinataire</label>
+        <input id="messageRecipientId" placeholder="user-123" />
+        <label>Message</label>
+        <textarea id="messageContent" placeholder="Votre message..."></textarea>
+        <button class="btn btn-primary" onclick="sendPrivateMessage()">Envoyer</button>
+        <div id="messageStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Mes conversations</h2>
+        <button class="btn btn-secondary" onclick="loadConversations()">Actualiser</button>
+        <div id="conversationsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const baseUrl = window.location.origin;
+    let userToken = localStorage.getItem('userToken');
+    let userId = null;
+
+    // Check authentication
+    if (!userToken) {
+      alert('Vous devez être connecté');
+      window.location.href = '/web/index.html';
+    }
+
+    // Load user info
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    userId = userInfo.id;
+    document.getElementById('userInfo').textContent = `${userInfo.firstName || 'User'} ${userInfo.lastName || ''} (${userInfo.email || ''})`;
+
+    function logout() {
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userInfo');
+      window.location.href = '/web/index.html';
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    async function api(path, options = {}) {
+      const headers = { ...options.headers };
+      if (userToken) headers['Authorization'] = `Bearer ${userToken}`;
+      if (options.body && typeof options.body === 'object') {
+        headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(options.body);
+      }
+
+      const res = await fetch(baseUrl + path, { ...options, headers });
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = text; }
+      if (!res.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data));
+      return data;
+    }
+
+    function showStatus(elementId, message, isError = false) {
+      const el = document.getElementById(elementId);
+      el.className = isError ? 'status-msg status-error' : 'status-msg status-success';
+      el.textContent = message;
+    }
+
+    // Profile
+    async function loadProfile() {
+      try {
+        const data = await api('/auth/me');
+        document.getElementById('profileResult').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('profileResult').textContent = 'Erreur: ' + err.message;
+      }
+    }
+
+    // Bank Accounts
+    async function createBankAccount() {
+      try {
+        const data = await api(`/clients/${userId}/accounts`, {
+          method: 'POST',
+          body: {
+            accountName: document.getElementById('accountName').value,
+            initialBalance: parseFloat(document.getElementById('initialBalance').value) || 0
+          }
+        });
+        showStatus('createAccountStatus', 'Compte créé: ' + data.account.iban);
+        loadBankAccounts();
+      } catch (err) {
+        showStatus('createAccountStatus', err.message, true);
+      }
+    }
+
+    async function loadBankAccounts() {
+      try {
+        const data = await api(`/clients/${userId}/accounts?includeInactive=true`);
+        const html = data.accounts.map(acc => `
+          <div class="list-item">
+            <h3>${acc.accountName} <span class="badge ${acc.isActive ? 'badge-success' : 'badge-danger'}">${acc.isActive ? 'Actif' : 'Inactif'}</span></h3>
+            <p><strong>IBAN:</strong> ${acc.iban}</p>
+            <p><strong>Solde:</strong> ${acc.balance} ${acc.currency}</p>
+            <p><strong>Créé le:</strong> ${new Date(acc.createdAt).toLocaleDateString()}</p>
+          </div>
+        `).join('');
+        document.getElementById('accountsList').innerHTML = html || '<p style="color: var(--muted);">Aucun compte bancaire</p>';
+      } catch (err) {
+        document.getElementById('accountsList').innerHTML = '<p style="color: var(--danger);">Erreur: ' + err.message + '</p>';
+      }
+    }
+
+    // Savings
+    async function openSavingsAccount() {
+      try {
+        const data = await api('/savings', {
+          method: 'POST',
+          body: {
+            clientId: userId,
+            sourceAccountIban: document.getElementById('savingsSourceIban').value,
+            initialAmount: parseFloat(document.getElementById('savingsAmount').value)
+          }
+        });
+        showStatus('savingsStatus', 'Compte d\'épargne ouvert avec succès!');
+        loadSavingsAccounts();
+      } catch (err) {
+        showStatus('savingsStatus', err.message, true);
+      }
+    }
+
+    async function loadSavingsAccounts() {
+      try {
+        const data = await api(`/savings/client/${userId}`);
+        const html = (data.accounts || []).map(acc => `
+          <div class="list-item">
+            <h3>Compte Épargne <span class="badge ${acc.isActive ? 'badge-success' : 'badge-danger'}">${acc.isActive ? 'Actif' : 'Fermé'}</span></h3>
+            <p><strong>Solde:</strong> ${acc.balance} €</p>
+            <p><strong>Taux:</strong> ${acc.interestRate}% journalier</p>
+            <p><strong>Créé le:</strong> ${new Date(acc.createdAt).toLocaleDateString()}</p>
+          </div>
+        `).join('');
+        document.getElementById('savingsList').innerHTML = html || '<p style="color: var(--muted);">Aucun compte d\'épargne</p>';
+      } catch (err) {
+        document.getElementById('savingsList').innerHTML = '<p style="color: var(--danger);">Erreur: ' + err.message + '</p>';
+      }
+    }
+
+    async function applyDailyInterest() {
+      try {
+        const data = await api('/savings/apply-interest', { method: 'POST' });
+        showStatus('interestStatus', data.message || 'Intérêts appliqués!');
+        loadSavingsAccounts();
+      } catch (err) {
+        showStatus('interestStatus', err.message, true);
+      }
+    }
+
+    // Stocks
+    async function loadStocks() {
+      try {
+        const data = await api('/stocks');
+        const html = (data.stocks || []).map(stock => `
+          <div class="list-item">
+            <h3>${stock.symbol} - ${stock.name} <span class="badge ${stock.isAvailable ? 'badge-success' : 'badge-danger'}">${stock.isAvailable ? 'Disponible' : 'Indisponible'}</span></h3>
+            <p><strong>Entreprise:</strong> ${stock.companyName}</p>
+          </div>
+        `).join('');
+        document.getElementById('stocksList').innerHTML = html || '<p style="color: var(--muted);">Aucune action disponible</p>';
+      } catch (err) {
+        document.getElementById('stocksList').innerHTML = '<p style="color: var(--danger);">Erreur: ' + err.message + '</p>';
+      }
+    }
+
+    // Orders
+    async function placeOrder() {
+      try {
+        const data = await api('/orders', {
+          method: 'POST',
+          body: {
+            clientId: userId,
+            stockSymbol: document.getElementById('orderSymbol').value,
+            orderType: document.getElementById('orderType').value,
+            quantity: parseInt(document.getElementById('orderQuantity').value),
+            price: parseFloat(document.getElementById('orderPrice').value)
+          }
+        });
+        showStatus('orderStatus', 'Ordre placé avec succès!');
+        loadOrders();
+      } catch (err) {
+        showStatus('orderStatus', err.message, true);
+      }
+    }
+
+    async function loadOrders() {
+      try {
+        const data = await api(`/orders/client/${userId}`);
+        const html = (data.orders || []).map(order => `
+          <div class="list-item">
+            <h3>Ordre ${order.orderType} - ${order.stockSymbol} <span class="badge badge-info">${order.status}</span></h3>
+            <p><strong>Quantité:</strong> ${order.quantity}</p>
+            <p><strong>Prix:</strong> ${order.price} €</p>
+            <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+          </div>
+        `).join('');
+        document.getElementById('ordersList').innerHTML = html || '<p style="color: var(--muted);">Aucun ordre</p>';
+      } catch (err) {
+        document.getElementById('ordersList').innerHTML = '<p style="color: var(--danger);">Erreur: ' + err.message + '</p>';
+      }
+    }
+
+    // Portfolio
+    async function loadPortfolio() {
+      try {
+        const data = await api(`/portfolio/${userId}`);
+        document.getElementById('portfolioResult').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('portfolioResult').textContent = 'Erreur: ' + err.message;
+      }
+    }
+
+    // Transactions
+    async function depositFunds() {
+      try {
+        const data = await api('/transactions/deposit', {
+          method: 'POST',
+          body: {
+            iban: document.getElementById('depositIban').value,
+            amount: parseFloat(document.getElementById('depositAmount').value)
+          }
+        });
+        showStatus('depositStatus', 'Dépôt effectué avec succès!');
+      } catch (err) {
+        showStatus('depositStatus', err.message, true);
+      }
+    }
+
+    async function withdrawFunds() {
+      try {
+        const data = await api('/transactions/withdraw', {
+          method: 'POST',
+          body: {
+            iban: document.getElementById('withdrawIban').value,
+            amount: parseFloat(document.getElementById('withdrawAmount').value)
+          }
+        });
+        showStatus('withdrawStatus', 'Retrait effectué avec succès!');
+      } catch (err) {
+        showStatus('withdrawStatus', err.message, true);
+      }
+    }
+
+    async function transferFunds() {
+      try {
+        const data = await api('/transactions/transfer', {
+          method: 'POST',
+          body: {
+            fromIban: document.getElementById('transferFromIban').value,
+            toIban: document.getElementById('transferToIban').value,
+            amount: parseFloat(document.getElementById('transferAmount').value)
+          }
+        });
+        showStatus('transferStatus', 'Transfert effectué avec succès!');
+      } catch (err) {
+        showStatus('transferStatus', err.message, true);
+      }
+    }
+
+    async function loadTransactions() {
+      try {
+        const data = await api(`/transactions/history/${userId}`);
+        document.getElementById('transactionsList').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('transactionsList').textContent = 'Erreur: ' + err.message;
+      }
+    }
+
+    // Messages
+    async function sendPrivateMessage() {
+      try {
+        const data = await api('/messages/private', {
+          method: 'POST',
+          body: {
+            senderId: userId,
+            recipientId: document.getElementById('messageRecipientId').value,
+            content: document.getElementById('messageContent').value
+          }
+        });
+        showStatus('messageStatus', 'Message envoyé!');
+        document.getElementById('messageContent').value = '';
+      } catch (err) {
+        showStatus('messageStatus', err.message, true);
+      }
+    }
+
+    async function loadConversations() {
+      try {
+        const data = await api(`/messages/conversations/${userId}`);
+        const html = (data.conversations || []).map(conv => `
+          <div class="list-item">
+            <h3>Conversation ${conv.id}</h3>
+            <p><strong>Statut:</strong> ${conv.status}</p>
+            <p><strong>Messages:</strong> ${conv.messageCount || 0}</p>
+          </div>
+        `).join('');
+        document.getElementById('conversationsList').innerHTML = html || '<p style="color: var(--muted);">Aucune conversation</p>';
+      } catch (err) {
+        document.getElementById('conversationsList').innerHTML = '<p style="color: var(--danger);">Erreur: ' + err.message + '</p>';
+      }
+    }
+
+    // Auto-load on page load
+    loadProfile();
+  </script>
+</body>
+</html>

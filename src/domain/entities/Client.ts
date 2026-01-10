@@ -8,6 +8,7 @@ export interface ClientProps {
   isEmailConfirmed: boolean;
   emailConfirmationToken?: string;
   emailConfirmationTokenExpiry?: Date;
+  isBanned: boolean;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -22,6 +23,7 @@ export class Client {
   public isEmailConfirmed: boolean;
   public emailConfirmationToken?: string;
   public emailConfirmationTokenExpiry?: Date;
+  public isBanned: boolean;
   public readonly createdAt: Date;
   public updatedAt?: Date;
 
@@ -35,6 +37,7 @@ export class Client {
     this.isEmailConfirmed = props.isEmailConfirmed;
     this.emailConfirmationToken = props.emailConfirmationToken;
     this.emailConfirmationTokenExpiry = props.emailConfirmationTokenExpiry;
+    this.isBanned = props.isBanned;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
@@ -54,6 +57,16 @@ export class Client {
     this.isEmailConfirmed = true;
     this.emailConfirmationToken = undefined;
     this.emailConfirmationTokenExpiry = undefined;
+    this.updatedAt = new Date();
+  }
+
+  public ban(): void {
+    this.isBanned = true;
+    this.updatedAt = new Date();
+  }
+
+  public unban(): void {
+    this.isBanned = false;
     this.updatedAt = new Date();
   }
 

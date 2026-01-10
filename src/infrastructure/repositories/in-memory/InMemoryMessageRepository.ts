@@ -40,6 +40,17 @@ export class InMemoryMessageRepository implements IMessageRepository {
     this.conversations.set(convId, conv);
   }
 
+  async markConversationAssignedByFirstResponder(convId: string, advisorId: string): Promise<void> {
+    const conv = this.conversations.get(convId);
+    if (!conv) return;
+    if (conv.firstResponderId) return; // already claimed
+    conv.firstResponderId = advisorId;
+    conv.firstResponseAt = new Date();
+    conv.advisorId = advisorId;
+    conv.status = 'assigned';
+    this.conversations.set(convId, conv);
+  }
+
   async findConversationById(convId: string): Promise<Conversation | null> {
     return this.conversations.get(convId) ?? null;
   }

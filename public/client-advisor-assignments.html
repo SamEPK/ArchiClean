@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignations Client-Conseiller</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .content {
+            padding: 30px;
+        }
+        .assignment-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+        .assignment-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .assignment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .client-info {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .client-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .client-email {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .advisor-info {
+            padding-left: 20px;
+            position: relative;
+        }
+        .advisor-info:before {
+            content: '↳';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .advisor-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .advisor-email {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .no-advisor {
+            color: #e74c3c;
+            font-style: italic;
+            padding-left: 20px;
+            position: relative;
+        }
+        .no-advisor:before {
+            content: '⚠';
+            position: absolute;
+            left: 0;
+            color: #e74c3c;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.assigned {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.unassigned {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+            background-color: #fdf2f2;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            margin: 20px;
+        }
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Assignations Client-Conseiller</h1>
+            <div id="summary" class="stats">
+                <div class="stat">
+                    <span id="total-clients" class="stat-number">-</span>
+                    <span class="stat-label">Total Clients</span>
+                </div>
+                <div class="stat">
+                    <span id="assigned-clients" class="stat-number">-</span>
+                    <span class="stat-label">Clients Assignés</span>
+                </div>
+                <div class="stat">
+                    <span id="unassigned-clients" class="stat-number">-</span>
+                    <span class="stat-label">Non Assignés</span>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="loadAssignments()">🔄 Actualiser</button>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                Chargement des assignations...
+            </div>
+            <div id="error" class="error" style="display: none;">
+                <h3>Erreur de chargement</h3>
+                <p id="error-message"></p>
+                <button class="refresh-btn" onclick="loadAssignments()">Réessayer</button>
+            </div>
+            <div id="assignments" class="assignment-grid" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadAssignments() {
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const assignmentsDiv = document.getElementById('assignments');
+
+            // Afficher le loading
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            assignmentsDiv.style.display = 'none';
+
+            try {
+                // D'abord, tentez de vous authentifier comme conseiller
+                let token = localStorage.getItem('advisorToken');
+                
+                if (!token) {
+                    // Tentative d'authentification avec un compte test
+                    const loginResponse = await fetch('/api/advisors/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: 'conseiller1@banque.com',
+                            password: 'SecurePass123'
+                        })
+                    });
+
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
+                        if (loginData.success) {
+                            token = loginData.token;
+                            localStorage.setItem('advisorToken', token);
+                        }
+                    }
+                }
+
+                if (!token) {
+                    throw new Error('Impossible de s\'authentifier. Veuillez vous connecter en tant que conseiller.');
+                }
+
+                // Récupérer les assignations
+                const response = await fetch('/api/advisors/client-assignments', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('advisorToken');
+                    throw new Error('Token expiré. Veuillez actualiser la page.');
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Erreur lors du chargement des assignations');
+                }
+
+                // Mettre à jour les statistiques
+                const summary = data.summary;
+                document.getElementById('total-clients').textContent = summary.totalClients;
+                document.getElementById('assigned-clients').textContent = summary.assignedClients;
+                document.getElementById('unassigned-clients').textContent = summary.unassignedClients;
+
+                // Afficher les assignations
+                displayAssignments(data.assignments);
+
+                loadingDiv.style.display = 'none';
+                assignmentsDiv.style.display = 'grid';
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                document.getElementById('error-message').textContent = error.message;
+            }
+        }
+
+        function displayAssignments(assignments) {
+            const container = document.getElementById('assignments');
+            container.innerHTML = '';
+
+            assignments.forEach(assignment => {
+                const card = document.createElement('div');
+                card.className = 'assignment-card';
+
+                const statusClass = assignment.advisor ? 'assigned' : 'unassigned';
+                const statusText = assignment.advisor ? 'Assigné' : 'Non assigné';
+
+                card.innerHTML = `
+                    <div class="client-info">
+                        <div class="client-name">
+                            ${assignment.client.firstName} ${assignment.client.lastName}
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="client-email">${assignment.client.email}</div>
+                    </div>
+                    <div class="advisor-info">
+                        ${assignment.advisor ? `
+                            <div class="advisor-name">${assignment.advisor.firstName} ${assignment.advisor.lastName}</div>
+                            <div class="advisor-email">${assignment.advisor.email}</div>
+                        ` : '<div class="no-advisor">Aucun conseiller assigné</div>'}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Charger automatiquement au démarrage
+        window.addEventListener('load', loadAssignments);
+    </script>
+</body>
+</html>

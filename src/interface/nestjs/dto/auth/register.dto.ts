@@ -1,5 +1,5 @@
 import { IsEmail, IsString, MinLength, Matches, IsOptional, IsEnum, IsBoolean } from 'class-validator';
-import { UserRole } from '../../../domain/entities/User';
+import { UserRole } from '../../../../domain/entities/User';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Email invalide' })
@@ -31,22 +31,4 @@ export class RegisterDto {
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
-}
-
-export class LoginDto {
-  @IsEmail({}, { message: 'Email invalide' })
-  email!: string;
-
-  @IsString()
-  password!: string;
-}
-
-export class ConfirmEmailDto {
-  @IsString()
-  token!: string;
-}
-
-export class RefreshTokenDto {
-  @IsString()
-  refreshToken!: string;
 }

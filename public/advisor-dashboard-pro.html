@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Conseiller - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --card: #111827;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #a855f7;
+      --accent-2: #9333ea;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --info: #60a5fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(168, 85, 247, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(147, 51, 234, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav h1 { font-size: 18px; }
+    .user-info { color: var(--muted); font-size: 13px; margin-right: 12px; }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+
+    .sidebar h3 { font-size: 14px; margin-bottom: 12px; color: var(--accent); }
+
+    .menu-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 4px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover { background: rgba(255,255,255,0.05); }
+
+    .menu-item.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-weight: 700;
+      border-left-color: var(--success);
+    }
+
+    .main { flex: 1; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .panel h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    .panel h3 {
+      font-size: 16px;
+      margin: 20px 0 12px 0;
+      color: var(--accent-2);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 12px;
+      margin: 10px 0 4px 0;
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    textarea { min-height: 60px; resize: vertical; }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 8px 4px 0 0;
+      transition: transform 0.2s;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border); }
+    .btn-success { background: var(--success); color: #0b1120; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .result {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      min-height: 20px;
+    }
+
+    .success {
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .error {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    .muted { color: var(--muted); font-size: 12px; }
+
+    .table {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .table-row:hover { background: rgba(255,255,255,0.05); }
+    .table-row.header { font-weight: 700; background: var(--card); cursor: default; font-size: 12px; }
+    .table-row.selected { background: rgba(168, 85, 247, 0.2); border-left: 4px solid var(--accent); }
+
+    pre {
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 11px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h1>🎯 Dashboard Conseiller - Banque AVENIR</h1>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="user-info" id="userInfo">Conseiller: Sophie Laurent</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <h3>📑 Sections</h3>
+      <div class="menu-item active" onclick="showSection('conversations')">💬 Conversations</div>
+      <div class="menu-item" onclick="showSection('credits')">💰 Crédits</div>
+      <div class="menu-item" onclick="showSection('accounts')">💳 Comptes</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <!-- CONVERSATIONS SECTION -->
+      <div id="section-conversations" class="section active">
+        <div class="panel">
+          <h2>💬 Gestion des Conversations</h2>
+
+          <h3>📋 Conversations ouvertes</h3>
+          <p class="muted">Cliquez sur une conversation pour la gérer</p>
+          <button class="btn btn-secondary" onclick="loadOpenConversations()">🔄 Actualiser</button>
+          <div id="conversationsTable" class="table"></div>
+
+          <div id="conversationActions" style="display: none; margin-top: 24px;">
+            <h3>Actions sur la conversation sélectionnée</h3>
+            <div id="selectedConvInfo" class="result"></div>
+
+            <label>Votre réponse</label>
+            <textarea id="replyContent" placeholder="Tapez votre message ici..."></textarea>
+            <button class="btn btn-primary" onclick="replyToSelectedConversation()">📤 Envoyer la réponse</button>
+            <button class="btn btn-success" onclick="assignSelectedConversation()">✓ M'assigner cette conversation</button>
+            <button class="btn btn-secondary" onclick="showTransferModal()">↗ Transférer à un collègue</button>
+            <div id="res-conversationAction" class="result"></div>
+          </div>
+
+          <!-- Modal transfert -->
+          <div id="transferModal" style="display: none; margin-top: 16px;">
+            <label>Transférer à :</label>
+            <select id="transferAdvisorSelect">
+              <option value="">Chargement des conseillers...</option>
+            </select>
+            <button class="btn btn-primary" onclick="confirmTransfer()">Confirmer le transfert</button>
+            <button class="btn btn-secondary" onclick="closeTransferModal()">Annuler</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREDITS SECTION -->
+      <div id="section-credits" class="section">
+        <div class="panel">
+          <h2>💰 Gestion des Crédits</h2>
+
+          <h3>Octroyer un crédit</h3>
+          <p class="muted">Sélectionnez un client et définissez les paramètres du crédit</p>
+
+          <div class="grid">
+            <div>
+              <label>Client</label>
+              <select id="creditClientSelect">
+                <option value="">Chargement des clients...</option>
+              </select>
+            </div>
+            <div>
+              <label>Montant (€)</label>
+              <input id="creditAmount" type="number" value="20000" />
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Taux annuel (%)</label>
+              <input id="creditAnnualRate" type="number" step="0.1" value="3.2" />
+            </div>
+            <div>
+              <label>Taux d'assurance (%)</label>
+              <input id="creditInsuranceRate" type="number" step="0.1" value="0.3" />
+            </div>
+          </div>
+
+          <label>Durée (mois)</label>
+          <input id="creditDuration" type="number" value="60" />
+
+          <button class="btn btn-primary" onclick="grantCredit()">✓ Octroyer le crédit</button>
+          <div id="res-grantCredit" class="result"></div>
+
+          <h3 style="margin-top: 32px;">📊 Consulter les crédits d'un client</h3>
+          <label>Sélectionnez un client</label>
+          <select id="viewCreditsClientSelect">
+            <option value="">Chargement des clients...</option>
+          </select>
+          <button class="btn btn-secondary" onclick="viewClientCredits()">Voir les crédits</button>
+          <pre id="res-listClientCredits" style="display: none;"></pre>
+        </div>
+      </div>
+
+      <!-- ACCOUNTS SECTION -->
+      <div id="section-accounts" class="section">
+        <div class="panel">
+          <h2>💳 Gestion des Comptes</h2>
+
+          <h3>📋 Consulter un compte client</h3>
+          <label>Sélectionnez un client</label>
+          <select id="accountClientSelect">
+            <option value="">Chargement des clients...</option>
+          </select>
+          <button class="btn btn-secondary" onclick="viewClientAccounts()">Voir les comptes</button>
+          <pre id="res-clientAccounts" style="display: none;"></pre>
+
+          <h3 style="margin-top: 32px;">💸 Effectuer un virement</h3>
+          <p class="muted">Pour simuler un virement entre comptes</p>
+          <div class="grid">
+            <div>
+              <label>Compte source</label>
+              <select id="sourceAccountSelect">
+                <option value="">Sélectionnez d'abord un client</option>
+              </select>
+            </div>
+            <div>
+              <label>Compte destination</label>
+              <select id="destAccountSelect">
+                <option value="">Sélectionnez d'abord un client</option>
+              </select>
+            </div>
+          </div>
+          <label>Montant (€)</label>
+          <input id="transferAmount" type="number" value="100" />
+          <button class="btn btn-primary" onclick="performTransfer()">Effectuer le virement</button>
+          <div id="res-transfer" class="result"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const baseUrl = window.location.origin;
+    let selectedConversation = null;
+    let clients = [];
+    let advisors = [];
+    let conversations = [];
+
+    // === UTILS ===
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      document.getElementById(`section-${name}`).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    async function api(path, options = {}) {
+      try {
+        const headers = { ...options.headers };
+        if (options.body && typeof options.body === 'object') {
+          headers['Content-Type'] = 'application/json';
+          options.body = JSON.stringify(options.body);
+        }
+
+        const res = await fetch(baseUrl + path, { ...options, headers });
+        const text = await res.text();
+        let data;
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (e) {
+          data = { error: text };
+        }
+        if (!res.ok) throw new Error(data.message || JSON.stringify(data));
+        return data;
+      } catch (err) {
+        console.error('API Error:', err);
+        throw err;
+      }
+    }
+
+    function showResult(id, message, isError = false) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'block';
+      el.className = isError ? 'result error' : 'result success';
+      el.textContent = message;
+      setTimeout(() => {
+        if (el.className.includes('result')) {
+          el.style.display = 'none';
+        }
+      }, 5000);
+    }
+
+    // === CONVERSATIONS ===
+    async function loadOpenConversations() {
+      try {
+        // Simuler des conversations
+        conversations = [
+          {
+            internalId: 'conv-abc123',
+            clientName: 'Marie Dubois',
+            clientEmail: 'marie.dubois@email.fr',
+            subject: 'Demande de crédit immobilier',
+            status: 'OPEN',
+            date: 'Aujourd\'hui 10:30'
+          },
+          {
+            internalId: 'conv-def456',
+            clientName: 'Pierre Martin',
+            clientEmail: 'pierre.martin@email.fr',
+            subject: 'Question sur compte épargne',
+            status: 'OPEN',
+            date: 'Aujourd\'hui 09:15'
+          },
+          {
+            internalId: 'conv-ghi789',
+            clientName: 'Julie Bernard',
+            clientEmail: 'julie.bernard@email.fr',
+            subject: 'Problème carte bancaire',
+            status: 'OPEN',
+            date: 'Hier 16:45'
+          }
+        ];
+
+        const table = document.getElementById('conversationsTable');
+        table.innerHTML = `
+          <div class="table-row header">
+            <div>Client</div>
+            <div>Sujet</div>
+            <div>Statut</div>
+            <div>Date</div>
+          </div>
+          ${conversations.map((conv, idx) => `
+            <div class="table-row" onclick="selectConversation(${idx})">
+              <div>
+                <div style="font-weight: 600;">${conv.clientName}</div>
+                <div style="font-size: 11px; color: var(--muted);">${conv.clientEmail}</div>
+              </div>
+              <div>${conv.subject}</div>
+              <div><span class="badge" style="padding: 3px 8px; border-radius: 4px; font-size: 10px; background: rgba(251, 191, 36, 0.2); color: var(--warning);">${conv.status}</span></div>
+              <div style="font-size: 11px;">${conv.date}</div>
+            </div>
+          `).join('')}
+        `;
+      } catch (err) {
+        showResult('conversationsTable', err.message, true);
+      }
+    }
+
+    function selectConversation(index) {
+      selectedConversation = conversations[index];
+      
+      // Highlight selected
+      document.querySelectorAll('#conversationsTable .table-row').forEach((row, idx) => {
+        if (idx === index + 1) { // +1 car header = row 0
+          row.classList.add('selected');
+        } else {
+          row.classList.remove('selected');
+        }
+      });
+
+      // Show actions
+      document.getElementById('conversationActions').style.display = 'block';
+      document.getElementById('selectedConvInfo').innerHTML = `
+        <div class="success">
+          <strong>Conversation sélectionnée :</strong> ${selectedConversation.clientName} - ${selectedConversation.subject}
+        </div>
+      `;
+      document.getElementById('selectedConvInfo').style.display = 'block';
+    }
+
+    async function replyToSelectedConversation() {
+      if (!selectedConversation) {
+        showResult('res-conversationAction', 'Veuillez sélectionner une conversation', true);
+        return;
+      }
+
+      const content = document.getElementById('replyContent').value.trim();
+      if (!content) {
+        showResult('res-conversationAction', 'Veuillez saisir un message', true);
+        return;
+      }
+
+      try {
+        // Simuler l'envoi
+        showResult('res-conversationAction', `✓ Réponse envoyée à ${selectedConversation.clientName}`, false);
+        document.getElementById('replyContent').value = '';
+      } catch (err) {
+        showResult('res-conversationAction', err.message, true);
+      }
+    }
+
+    async function assignSelectedConversation() {
+      if (!selectedConversation) {
+        showResult('res-conversationAction', 'Veuillez sélectionner une conversation', true);
+        return;
+      }
+
+      try {
+        // Simuler l'assignation
+        showResult('res-conversationAction', `✓ Conversation assignée avec succès`, false);
+        selectedConversation.status = 'ASSIGNED';
+        loadOpenConversations();
+      } catch (err) {
+        showResult('res-conversationAction', err.message, true);
+      }
+    }
+
+    function showTransferModal() {
+      if (!selectedConversation) {
+        showResult('res-conversationAction', 'Veuillez sélectionner une conversation', true);
+        return;
+      }
+
+      document.getElementById('transferModal').style.display = 'block';
+      loadAdvisorsForTransfer();
+    }
+
+    function closeTransferModal() {
+      document.getElementById('transferModal').style.display = 'none';
+    }
+
+    async function loadAdvisorsForTransfer() {
+      advisors = [
+        { internalId: 'adv-123', name: 'Marc Durand' },
+        { internalId: 'adv-456', name: 'Julie Moreau' },
+        { internalId: 'adv-789', name: 'Paul Richard' }
+      ];
+
+      const select = document.getElementById('transferAdvisorSelect');
+      select.innerHTML = `<option value="">-- Sélectionnez un conseiller --</option>` +
+        advisors.map((adv, idx) => `<option value="${idx}">${adv.name}</option>`).join('');
+    }
+
+    async function confirmTransfer() {
+      const selectedIndex = document.getElementById('transferAdvisorSelect').value;
+      if (!selectedIndex) {
+        showResult('res-conversationAction', 'Veuillez sélectionner un conseiller', true);
+        return;
+      }
+
+      const advisor = advisors[selectedIndex];
+      showResult('res-conversationAction', `✓ Conversation transférée à ${advisor.name}`, false);
+      closeTransferModal();
+      
+      // Retirer de la liste
+      conversations = conversations.filter(c => c.internalId !== selectedConversation.internalId);
+      selectedConversation = null;
+      loadOpenConversations();
+      document.getElementById('conversationActions').style.display = 'none';
+    }
+
+    // === CRÉDITS ===
+    async function loadClients() {
+      try {
+        const data = await api('/clients');
+        clients = data.map(c => ({
+          internalId: c.id,
+          displayName: `${c.firstName} ${c.lastName}`,
+          email: c.email
+        }));
+
+        // Remplir les dropdowns
+        ['creditClientSelect', 'viewCreditsClientSelect', 'accountClientSelect'].forEach(id => {
+          const select = document.getElementById(id);
+          if (select) {
+            select.innerHTML = '<option value="">-- Sélectionnez un client --</option>' +
+              clients.map((c, idx) => `<option value="${idx}">${c.displayName} (${c.email})</option>`).join('');
+          }
+        });
+      } catch (err) {
+        console.error('Error loading clients:', err);
+        clients = [
+          { internalId: 'client-1', displayName: 'Sophie Laurent', email: 'sophie@test.com' },
+          { internalId: 'client-2', displayName: 'Marc Durand', email: 'marc@test.com' }
+        ];
+        
+        ['creditClientSelect', 'viewCreditsClientSelect', 'accountClientSelect'].forEach(id => {
+          const select = document.getElementById(id);
+          if (select) {
+            select.innerHTML = '<option value="">-- Sélectionnez un client --</option>' +
+              clients.map((c, idx) => `<option value="${idx}">${c.displayName} (${c.email})</option>`).join('');
+          }
+        });
+      }
+    }
+
+    async function grantCredit() {
+      const clientIndex = document.getElementById('creditClientSelect').value;
+      if (!clientIndex) {
+        showResult('res-grantCredit', 'Veuillez sélectionner un client', true);
+        return;
+      }
+
+      const client = clients[clientIndex];
+      const amount = parseFloat(document.getElementById('creditAmount').value);
+      const rate = parseFloat(document.getElementById('creditAnnualRate').value);
+      const duration = parseInt(document.getElementById('creditDuration').value);
+
+      try {
+        // Calculer mensualité
+        const monthlyRate = rate / 100 / 12;
+        const monthlyPayment = (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -duration));
+
+        showResult('res-grantCredit', 
+          `✓ Crédit de ${amount}€ accordé à ${client.displayName} - Mensualité: ${monthlyPayment.toFixed(2)}€`,
+          false
+        );
+      } catch (err) {
+        showResult('res-grantCredit', err.message, true);
+      }
+    }
+
+    async function viewClientCredits() {
+      const clientIndex = document.getElementById('viewCreditsClientSelect').value;
+      if (!clientIndex) {
+        showResult('res-listClientCredits', 'Veuillez sélectionner un client', true);
+        return;
+      }
+
+      const client = clients[clientIndex];
+      const pre = document.getElementById('res-listClientCredits');
+      pre.style.display = 'block';
+      pre.textContent = JSON.stringify({
+        client: client.displayName,
+        credits: [
+          { montant: '20000€', taux: '3.2%', durée: '60 mois', mensualité: '362.50€', statut: 'ACTIF' }
+        ]
+      }, null, 2);
+    }
+
+    // === COMPTES ===
+    async function viewClientAccounts() {
+      const clientIndex = document.getElementById('accountClientSelect').value;
+      if (!clientIndex) {
+        return;
+      }
+
+      const client = clients[clientIndex];
+      const pre = document.getElementById('res-clientAccounts');
+      pre.style.display = 'block';
+      pre.textContent = JSON.stringify({
+        client: client.displayName,
+        accounts: [
+          { type: 'Compte Courant', iban: 'FR76...', solde: '2450.80€', statut: 'ACTIF' },
+          { type: 'Livret A', iban: 'FR76...', solde: '15000.00€', statut: 'ACTIF' }
+        ]
+      }, null, 2);
+
+      // Remplir les dropdowns de virement
+      const accounts = ['Compte Courant', 'Livret A'];
+      ['sourceAccountSelect', 'destAccountSelect'].forEach(id => {
+        const select = document.getElementById(id);
+        select.innerHTML = accounts.map(acc => `<option value="${acc}">${acc}</option>`).join('');
+      });
+    }
+
+    async function performTransfer() {
+      const source = document.getElementById('sourceAccountSelect').value;
+      const dest = document.getElementById('destAccountSelect').value;
+      const amount = document.getElementById('transferAmount').value;
+
+      if (!source || !dest) {
+        showResult('res-transfer', 'Veuillez sélectionner les comptes', true);
+        return;
+      }
+
+      if (source === dest) {
+        showResult('res-transfer', 'Les comptes source et destination doivent être différents', true);
+        return;
+      }
+
+      showResult('res-transfer', `✓ Virement de ${amount}€ effectué de ${source} vers ${dest}`, false);
+    }
+
+    // === INIT ===
+    document.addEventListener('DOMContentLoaded', () => {
+      loadClients();
+      loadOpenConversations();
+    });
+  </script>
+</body>
+</html>

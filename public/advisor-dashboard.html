@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advisor Dashboard - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --card: #111827;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #a855f7;
+      --accent-2: #9333ea;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --success: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(168, 85, 247, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(147, 51, 234, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .nav {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .nav h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    .nav-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .user-info {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .btn-logout {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+      border-color: transparent;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .panel h2 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 10px;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-success {
+      background: var(--success);
+      color: #0b1120;
+    }
+    pre {
+      background: #0a1020;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .list-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .list-item h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+    }
+    .list-item p {
+      margin: 4px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .badge-success {
+      background: rgba(52, 211, 153, 0.2);
+      color: var(--success);
+    }
+    .badge-warning {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+    .badge-info {
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--accent);
+    }
+    .status-msg {
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .status-success {
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .status-error {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h1>💼 Banque AVENIR - Espace Conseiller</h1>
+    <div class="nav-right">
+      <span class="user-info" id="userInfo">Chargement...</span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('conversations')">💬 Conversations</div>
+      <div class="tab" onclick="switchTab('credits')">💰 Crédits</div>
+      <div class="tab" onclick="switchTab('clients')">👥 Clients</div>
+    </div>
+
+    <!-- Conversations Tab -->
+    <div id="tab-conversations" class="tab-content active">
+      <div style="display: grid; grid-template-columns: 350px 1fr; gap: 20px; height: calc(100vh - 200px);">
+        <!-- Conversations List -->
+        <div class="panel" style="overflow-y: auto;">
+          <h2>💬 Conversations Clients</h2>
+          <p style="color: var(--muted); font-size: 12px; margin-bottom: 16px;">
+            <span id="conversationsCount">0</span> conversation(s) • <span id="chatStatus">● Déconnecté</span>
+          </p>
+
+          <div id="conversationsList" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--muted); text-align: center; padding: 20px; font-size: 13px;">
+              Chargement des conversations...
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="panel" style="display: flex; flex-direction: column; height: 100%;">
+          <div id="chatHeader" style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+            <h2 id="chatClientName" style="margin: 0; font-size: 18px;">Sélectionnez une conversation</h2>
+            <p id="chatClientInfo" style="color: var(--muted); font-size: 13px; margin: 4px 0 0 0;"></p>
+          </div>
+
+          <div id="chatMessages" style="flex: 1; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+            <div style="color: var(--muted); text-align: center; padding: 40px 20px;">
+              Sélectionnez une conversation pour commencer à discuter avec un client.
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: flex-end;">
+            <textarea id="chatInput" placeholder="Tapez votre message..." style="flex: 1; min-height: 60px; max-height: 120px; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; resize: vertical;" disabled></textarea>
+            <button class="btn btn-primary" onclick="sendAdvisorMessage()" style="height: 60px;" disabled id="sendBtn">
+              Envoyer
+            </button>
+          </div>
+
+          <div style="margin-top: 8px; color: var(--muted); font-size: 11px;">
+            <span id="typingIndicator" style="font-style: italic;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credits Tab -->
+    <div id="tab-credits" class="tab-content">
+      <div class="panel">
+        <h2>Octroyer un crédit</h2>
+        <p style="color: var(--muted); font-size: 13px;">
+          Créer un crédit avec mensualité constante et assurance incluse.
+        </p>
+        <label>Rechercher un client</label>
+        <input id="searchClientForGrant" placeholder="Rechercher par nom ou email..." oninput="filterClientsForGrant()" />
+        <label>Sélectionner le client</label>
+        <select id="creditClientId" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); margin-bottom: 10px;">
+          <option value="">-- Sélectionner un client --</option>
+        </select>
+        <div class="grid">
+          <div>
+            <label>Montant (€)</label>
+            <input id="creditAmount" type="number" value="20000" />
+          </div>
+          <div></div>
+        </div>
+        <div class="grid">
+          <div>
+            <label>Taux annuel (%)</label>
+            <input id="creditAnnualRate" type="number" step="0.1" value="3.2" />
+          </div>
+          <div>
+            <label>Taux d'assurance (%)</label>
+            <input id="creditInsuranceRate" type="number" step="0.1" value="0.3" />
+          </div>
+        </div>
+        <label>Durée (mois)</label>
+        <input id="creditDuration" type="number" value="60" />
+        <button class="btn btn-primary" onclick="grantCredit()">Octroyer le crédit</button>
+        <div id="creditStatus"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Crédits d'un client</h2>
+        <label>Rechercher un client</label>
+        <input id="searchClientForCredits" placeholder="Rechercher par nom ou email..." oninput="filterClientsForCredits()" />
+        <label>Sélectionner le client</label>
+        <select id="viewCreditsClientId" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); margin-bottom: 10px;">
+          <option value="">-- Sélectionner un client --</option>
+        </select>
+        <button class="btn btn-secondary" onclick="listClientCredits()">Voir les crédits</button>
+        <pre id="clientCreditsList">{}</pre>
+      </div>
+    </div>
+
+    <!-- Clients Tab -->
+    <div id="tab-clients" class="tab-content">
+      <div class="panel">
+        <h2>Rechercher un client</h2>
+        <p style="color: var(--muted); font-size: 13px;">
+          Cette section permet de voir les informations des clients pour mieux les conseiller.
+        </p>
+        <label>Rechercher un client</label>
+        <input id="searchClientInput" placeholder="Rechercher par nom ou email..." oninput="filterClientsForSearch()" />
+        <label>Sélectionner le client</label>
+        <select id="searchClientId" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); margin-bottom: 10px;">
+          <option value="">-- Sélectionner un client --</option>
+        </select>
+        <button class="btn btn-secondary" onclick="searchClient()">Voir les détails</button>
+        <pre id="clientSearchResult">{}</pre>
+      </div>
+
+      <div class="panel">
+        <h2>Notes et Informations</h2>
+        <p style="color: var(--muted); font-size: 13px;">
+          En tant que conseiller, vous pouvez visualiser les comptes bancaires, les ordres et le portfolio des clients pour leur fournir un conseil personnalisé.
+        </p>
+        <p style="color: var(--muted); font-size: 13px;">
+          💡 Astuce: Utilisez les endpoints <code>/clients/:clientId/accounts</code>, <code>/orders/client/:clientId</code>, et <code>/portfolio/:clientId</code> pour obtenir plus d'informations.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io client -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <script>
+    const baseUrl = window.location.origin;
+    let advisorToken = localStorage.getItem('advisorToken');
+    let advisorId = null;
+
+    // Check authentication
+    if (!advisorToken) {
+      alert('Vous devez être connecté en tant que conseiller');
+      window.location.href = '/index.html';
+    }
+
+    // Load advisor info
+    const advisorInfo = JSON.parse(localStorage.getItem('advisorInfo') || '{}');
+    advisorId = advisorInfo.id;
+    document.getElementById('userInfo').textContent = `${advisorInfo.firstName || 'Conseiller'} ${advisorInfo.lastName || ''} (${advisorInfo.email || ''})`;
+
+    function logout() {
+      localStorage.removeItem('advisorToken');
+      localStorage.removeItem('advisorInfo');
+      window.location.href = '/index.html';
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    async function api(path, options = {}) {
+      const headers = { ...options.headers };
+      if (advisorToken) headers['Authorization'] = `Bearer ${advisorToken}`;
+      if (options.body && typeof options.body === 'object') {
+        headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(options.body);
+      }
+
+      const res = await fetch(baseUrl + path, { ...options, headers });
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = text; }
+      if (!res.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data));
+      return data;
+    }
+
+    function showStatus(elementId, message, isError = false) {
+      const el = document.getElementById(elementId);
+      el.className = isError ? 'status-msg status-error' : 'status-msg status-success';
+      el.textContent = message;
+    }
+
+    // Conversations
+    async function loadOpenConversations() {
+      try {
+        const data = await api('/advisors/conversations/open');
+        const conversations = data.conversations || [];
+
+        if (conversations.length === 0) {
+          document.getElementById('openConversationsList').innerHTML = '<p style="color: var(--muted); margin-top: 16px;">Aucune conversation ouverte</p>';
+          return;
+        }
+
+        const html = conversations.map(conv => `
+          <div class="list-item">
+            <h3>Conversation ${conv.id} <span class="badge badge-warning">${conv.status || 'OPEN'}</span></h3>
+            <p><strong>Client:</strong> ${conv.clientId || 'N/A'}</p>
+            <p><strong>Messages:</strong> ${conv.messageCount || 0}</p>
+            <p><strong>Créée le:</strong> ${conv.createdAt ? new Date(conv.createdAt).toLocaleString() : 'N/A'}</p>
+            <button class="btn btn-small btn-success" onclick="assignConversationById('${conv.id}')">Prendre en charge</button>
+          </div>
+        `).join('');
+        document.getElementById('openConversationsList').innerHTML = html;
+      } catch (err) {
+        document.getElementById('openConversationsList').innerHTML = '<p style="color: var(--danger); margin-top: 16px;">Erreur: ' + err.message + '</p>';
+      }
+    }
+
+    async function replyToConversation() {
+      try {
+        const convId = document.getElementById('replyConvId').value;
+        const content = document.getElementById('replyContent').value;
+
+        await api(`/advisors/conversations/${convId}/reply`, {
+          method: 'POST',
+          body: { content }
+        });
+
+        showStatus('replyStatus', 'Réponse envoyée avec succès!');
+        document.getElementById('replyContent').value = '';
+        loadOpenConversations();
+      } catch (err) {
+        showStatus('replyStatus', err.message, true);
+      }
+    }
+
+    async function assignConversation() {
+      const convId = document.getElementById('assignConvId').value;
+      await assignConversationById(convId);
+    }
+
+    async function assignConversationById(convId) {
+      try {
+        await api(`/advisors/conversations/${convId}/assign`, {
+          method: 'POST'
+        });
+
+        showStatus('assignStatus', 'Conversation prise en charge avec succès!');
+        loadOpenConversations();
+      } catch (err) {
+        showStatus('assignStatus', err.message, true);
+      }
+    }
+
+    async function transferConversation() {
+      try {
+        const convId = document.getElementById('transferConvId').value;
+        const toAdvisorId = document.getElementById('transferToAdvisorId').value;
+
+        await api(`/advisors/conversations/${convId}/transfer`, {
+          method: 'POST',
+          body: { toAdvisorId }
+        });
+
+        showStatus('transferStatus', 'Conversation transférée avec succès!');
+        loadOpenConversations();
+      } catch (err) {
+        showStatus('transferStatus', err.message, true);
+      }
+    }
+
+    // Credits
+    async function grantCredit() {
+      try {
+        const data = await api('/advisors/credits', {
+          method: 'POST',
+          body: {
+            clientId: document.getElementById('creditClientId').value,
+            amount: parseFloat(document.getElementById('creditAmount').value),
+            annualRate: parseFloat(document.getElementById('creditAnnualRate').value),
+            insuranceRate: parseFloat(document.getElementById('creditInsuranceRate').value),
+            durationMonths: parseInt(document.getElementById('creditDuration').value)
+          }
+        });
+
+        showStatus('creditStatus', `Crédit accordé! Mensualité: ${data.credit.monthlyPayment}€`);
+      } catch (err) {
+        showStatus('creditStatus', err.message, true);
+      }
+    }
+
+    async function listClientCredits() {
+      try {
+        const clientId = document.getElementById('viewCreditsClientId').value;
+        if (!clientId) {
+          document.getElementById('clientCreditsList').textContent = 'Veuillez sélectionner un client';
+          return;
+        }
+        const data = await api(`/advisors/clients/${clientId}/credits`);
+        document.getElementById('clientCreditsList').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('clientCreditsList').textContent = 'Erreur: ' + err.message;
+      }
+    }
+
+    // Client selection and filtering
+    let allClients = [];
+
+    async function loadAllClients() {
+      try {
+        const data = await api('/clients');
+        allClients = data.clients || [];
+
+        // Populate all dropdowns
+        populateClientDropdown('creditClientId', allClients);
+        populateClientDropdown('viewCreditsClientId', allClients);
+        populateClientDropdown('searchClientId', allClients);
+
+        console.log(`Loaded ${allClients.length} clients`);
+      } catch (err) {
+        console.error('Failed to load clients:', err);
+      }
+    }
+
+    function populateClientDropdown(selectId, clients) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+
+      // Keep the default option
+      select.innerHTML = '<option value="">-- Sélectionner un client --</option>';
+
+      // Add client options
+      clients.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client.id;
+        option.textContent = `${client.firstName} ${client.lastName} - ${client.email}`;
+        select.appendChild(option);
+      });
+    }
+
+    function filterClientsForGrant() {
+      const searchTerm = document.getElementById('searchClientForGrant').value.toLowerCase();
+      const filteredClients = allClients.filter(client => {
+        const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+        const email = client.email.toLowerCase();
+        return fullName.includes(searchTerm) || email.includes(searchTerm);
+      });
+      populateClientDropdown('creditClientId', filteredClients);
+    }
+
+    function filterClientsForCredits() {
+      const searchTerm = document.getElementById('searchClientForCredits').value.toLowerCase();
+      const filteredClients = allClients.filter(client => {
+        const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+        const email = client.email.toLowerCase();
+        return fullName.includes(searchTerm) || email.includes(searchTerm);
+      });
+      populateClientDropdown('viewCreditsClientId', filteredClients);
+    }
+
+    function filterClientsForSearch() {
+      const searchTerm = document.getElementById('searchClientInput').value.toLowerCase();
+      const filteredClients = allClients.filter(client => {
+        const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+        const email = client.email.toLowerCase();
+        return fullName.includes(searchTerm) || email.includes(searchTerm);
+      });
+      populateClientDropdown('searchClientId', filteredClients);
+    }
+
+    // Clients
+    async function searchClient() {
+      try {
+        const clientId = document.getElementById('searchClientId').value;
+
+        if (!clientId) {
+          document.getElementById('clientSearchResult').textContent = 'Veuillez sélectionner un client';
+          return;
+        }
+
+        // Try to get client info from multiple endpoints
+        const [accounts, orders, portfolio] = await Promise.allSettled([
+          api(`/clients/${clientId}/accounts?includeInactive=true`),
+          api(`/orders/client/${clientId}`),
+          api(`/portfolio/${clientId}`)
+        ]);
+
+        const result = {
+          accounts: accounts.status === 'fulfilled' ? accounts.value : { error: accounts.reason.message },
+          orders: orders.status === 'fulfilled' ? orders.value : { error: orders.reason.message },
+          portfolio: portfolio.status === 'fulfilled' ? portfolio.value : { error: portfolio.reason.message }
+        };
+
+        document.getElementById('clientSearchResult').textContent = JSON.stringify(result, null, 2);
+      } catch (err) {
+        document.getElementById('clientSearchResult').textContent = 'Erreur: ' + err.message;
+      }
+    }
+
+    // ===== CHAT WEBSOCKET =====
+    let socket = null;
+    let conversations = [];
+    let currentConversation = null;
+    let chatMessages = [];
+
+    function initAdvisorChat() {
+      if (!advisorToken || !advisorId) {
+        console.error('No token or advisorId for chat');
+        return;
+      }
+
+      // Connect to WebSocket
+      socket = io(baseUrl, {
+        auth: { token: advisorToken },
+        transports: ['websocket', 'polling']
+      });
+
+      socket.on('connect', () => {
+        console.log('✅ Advisor connected to chat server');
+        document.getElementById('chatStatus').textContent = '● Connecté';
+        document.getElementById('chatStatus').style.color = 'var(--success)';
+        loadConversationsData();
+      });
+
+      socket.on('disconnect', () => {
+        console.log('❌ Advisor disconnected from chat server');
+        document.getElementById('chatStatus').textContent = '● Déconnecté';
+        document.getElementById('chatStatus').style.color = 'var(--danger)';
+      });
+
+      socket.on('new:client-message', (data) => {
+        console.log('📨 New client message:', data);
+
+        // Add to conversations list if not present
+        const existingConv = conversations.find(c => c.id === data.conversationId);
+        if (!existingConv) {
+          conversations.unshift({
+            id: data.conversationId,
+            clientId: data.clientId,
+            lastMessage: data.content,
+            lastMessageTime: data.createdAt,
+            unread: true
+          });
+          renderConversationsList();
+        }
+
+        // Update current chat if active
+        if (currentConversation && currentConversation.id === data.conversationId) {
+          displayChatMessage({
+            senderId: data.clientId,
+            content: data.content,
+            createdAt: data.createdAt,
+            senderRole: 'client'
+          });
+          playMessageSound();
+        }
+      });
+
+      socket.on('error', (error) => {
+        console.error('❌ Socket error:', error);
+      });
+    }
+
+    async function loadConversationsData() {
+      try {
+        // Load open conversations from API
+        const response = await api('/advisors/conversations/open');
+        conversations = response.conversations || [];
+        document.getElementById('conversationsCount').textContent = conversations.length;
+        renderConversationsList();
+      } catch (err) {
+        console.error('Failed to load conversations:', err);
+        document.getElementById('conversationsList').innerHTML = `
+          <div style="color: var(--danger); text-align: center; padding: 20px; font-size: 13px;">
+            Erreur de chargement
+          </div>
+        `;
+      }
+    }
+
+    function renderConversationsList() {
+      const container = document.getElementById('conversationsList');
+      if (conversations.length === 0) {
+        container.innerHTML = `
+          <div style="color: var(--muted); text-align: center; padding: 20px; font-size: 13px;">
+            Aucune conversation pour le moment
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = conversations.map(conv => `
+        <div onclick="selectConversation('${conv.id}')" style="cursor: pointer; padding: 12px; background: ${currentConversation?.id === conv.id ? 'var(--card)' : 'transparent'}; border: 1px solid ${currentConversation?.id === conv.id ? 'var(--accent)' : 'var(--border)'}; border-radius: 8px; transition: all 0.2s;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+            <span style="font-weight: 600; font-size: 14px; color: ${conv.unread ? 'var(--accent)' : 'var(--text)'};">
+              Client ${conv.clientId?.substring(0, 8) || conv.id.substring(0, 8)}
+            </span>
+            ${conv.unread ? '<span style="width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: block;"></span>' : ''}
+          </div>
+          <div style="font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${escapeHtml(conv.lastMessage || 'Nouvelle conversation')}
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+            ${formatChatTime(conv.lastMessageTime || conv.createdAt)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function selectConversation(conversationId) {
+      currentConversation = conversations.find(c => c.id === conversationId);
+      if (!currentConversation) return;
+
+      // Mark as read
+      currentConversation.unread = false;
+      renderConversationsList();
+
+      // Update header
+      document.getElementById('chatClientName').textContent = `Chat avec Client ${currentConversation.clientId?.substring(0, 8) || conversationId.substring(0, 8)}`;
+      document.getElementById('chatClientInfo').textContent = `Conversation ID: ${conversationId}`;
+
+      // Enable input
+      document.getElementById('chatInput').disabled = false;
+      document.getElementById('sendBtn').disabled = false;
+
+      // Join conversation room
+      if (socket && socket.connected) {
+        socket.emit('join:conversation', { conversationId });
+      }
+
+      // Load messages
+      await loadConversationMessages(conversationId);
+    }
+
+    async function loadConversationMessages(conversationId) {
+      try {
+        const response = await api(`/advisors/conversations/${conversationId}/messages`);
+        chatMessages = response.messages || [];
+        renderChatMessages();
+      } catch (err) {
+        console.error('Failed to load messages:', err);
+        document.getElementById('chatMessages').innerHTML = `
+          <div style="color: var(--muted); text-align: center; padding: 20px;">
+            Aucun message pour le moment.<br>
+            Commencez la conversation !
+          </div>
+        `;
+        chatMessages = [];
+        renderChatMessages();
+      }
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById('chatMessages');
+      if (chatMessages.length === 0) {
+        container.innerHTML = `
+          <div style="color: var(--muted); text-align: center; padding: 20px;">
+            Aucun message pour le moment.<br>
+            Commencez la conversation !
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = chatMessages.map(msg => {
+        const isMe = msg.senderRole === 'advisor';
+        return `
+          <div style="margin-bottom: 16px; display: flex; ${isMe ? 'justify-content: flex-end' : 'justify-content: flex-start'};">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 12px; ${
+              isMe
+                ? 'background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b1120;'
+                : 'background: var(--panel); border: 1px solid var(--border);'
+            }">
+              <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px; ${isMe ? 'color: rgba(0,0,0,0.7);' : 'color: #38bdf8;'}">
+                ${isMe ? 'Vous' : 'Client'}
+              </div>
+              <div style="font-size: 14px;">
+                ${escapeHtml(msg.content)}
+              </div>
+              <div style="font-size: 11px; margin-top: 4px; ${isMe ? 'color: rgba(0,0,0,0.5);' : 'color: var(--muted);'}">
+                ${formatChatTime(msg.createdAt)}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Scroll to bottom
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function displayChatMessage(message) {
+      chatMessages.push(message);
+      renderChatMessages();
+    }
+
+    function sendAdvisorMessage() {
+      const input = document.getElementById('chatInput');
+      const content = input.value.trim();
+
+      if (!content) return;
+      if (!currentConversation) {
+        alert('Veuillez sélectionner une conversation');
+        return;
+      }
+      if (!socket || !socket.connected) {
+        alert('Chat déconnecté. Veuillez rafraîchir la page.');
+        return;
+      }
+
+      // Emit to server
+      socket.emit('advisor:message', {
+        conversationId: currentConversation.id,
+        content: content
+      });
+
+      // Display immediately
+      displayChatMessage({
+        senderId: advisorId,
+        content: content,
+        createdAt: new Date().toISOString(),
+        senderRole: 'advisor'
+      });
+
+      input.value = '';
+    }
+
+    // Handle Enter key
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendAdvisorMessage();
+          }
+        });
+      }
+    });
+
+    function formatChatTime(dateStr) {
+      if (!dateStr) return 'À l\'instant';
+
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'À l\'instant';
+
+      const now = new Date();
+      const diff = now - date;
+
+      if (diff < 60000) return 'À l\'instant';
+      if (diff < 3600000) return Math.floor(diff / 60000) + ' min';
+      if (diff < 86400000) return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function playMessageSound() {
+      try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0/LTgjMGHm7A7+OZSA0PWrHn7q1aFQtDm+HyvmgeBD+P1vPPfi8GKHu/8Nqk');
+        audio.volume = 0.3;
+        audio.play();
+      } catch (e) {}
+    }
+
+    // Initialize chat when page loads
+    if (advisorToken && advisorId) {
+      initAdvisorChat();
+    }
+
+    // Auto-load on page load
+    loadOpenConversations();
+    loadAllClients();
+  </script>
+</body>
+</html>

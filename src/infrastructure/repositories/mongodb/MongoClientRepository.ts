@@ -12,6 +12,7 @@ interface ClientDocument extends Document {
   isEmailConfirmed: boolean;
   emailConfirmationToken?: string;
   emailConfirmationTokenExpiry?: Date;
+  isBanned: boolean;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -26,6 +27,7 @@ const clientSchema = new Schema<ClientDocument>({
   isEmailConfirmed: { type: Boolean, required: true, default: false },
   emailConfirmationToken: { type: String, required: false, index: true },
   emailConfirmationTokenExpiry: { type: Date, required: false },
+  isBanned: { type: Boolean, required: true, default: false },
   createdAt: { type: Date, required: true, default: Date.now },
   updatedAt: { type: Date, required: false },
 });
@@ -44,6 +46,7 @@ export class MongoClientRepository implements IClientRepository {
       isEmailConfirmed: doc.isEmailConfirmed,
       emailConfirmationToken: doc.emailConfirmationToken,
       emailConfirmationTokenExpiry: doc.emailConfirmationTokenExpiry,
+      isBanned: doc.isBanned,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });
@@ -60,6 +63,7 @@ export class MongoClientRepository implements IClientRepository {
       isEmailConfirmed: client.isEmailConfirmed,
       emailConfirmationToken: client.emailConfirmationToken,
       emailConfirmationTokenExpiry: client.emailConfirmationTokenExpiry,
+      isBanned: client.isBanned,
       createdAt: client.createdAt,
       updatedAt: client.updatedAt,
     });
@@ -94,6 +98,7 @@ export class MongoClientRepository implements IClientRepository {
           isEmailConfirmed: client.isEmailConfirmed,
           emailConfirmationToken: client.emailConfirmationToken,
           emailConfirmationTokenExpiry: client.emailConfirmationTokenExpiry,
+          isBanned: client.isBanned,
           updatedAt: client.updatedAt,
         },
       }

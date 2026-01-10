@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchiClean API Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #34d399;
+      --accent-2: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --card: #1f2937;
+      --border: rgba(148, 163, 184, 0.2);
+      --chip: rgba(56, 189, 248, 0.1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(52, 211, 153, 0.08), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.12), transparent 35%),
+                  radial-gradient(circle at 70% 70%, rgba(52, 211, 153, 0.06), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #0b1120;
+      letter-spacing: 0.5px;
+      box-shadow: 0 10px 40px rgba(56, 189, 248, 0.25);
+    }
+    h1 { margin: 0; font-size: 28px; letter-spacing: -0.6px; }
+    .subtitle { color: var(--muted); max-width: 640px; line-height: 1.5; margin: 0; }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .pill {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .pill.active { border-color: var(--accent); background: rgba(52, 211, 153, 0.12); color: #eafff6; }
+    .pill small { color: var(--muted); }
+    .search {
+      flex: 1;
+      min-width: 220px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      outline: none;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-label { color: var(--muted); font-size: 13px; }
+    .stat-value { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .card:hover { transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.35); }
+    .card .top { display: flex; justify-content: space-between; gap: 10px; }
+    .method {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      border: 1px solid var(--border);
+    }
+    .GET { color: #22d3ee; background: rgba(34, 211, 238, 0.12); border-color: rgba(34, 211, 238, 0.4); }
+    .POST { color: #34d399; background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.4); }
+    .PUT { color: #fbbf24; background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.35); }
+    .DELETE { color: #f87171; background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.4); }
+    .path { font-family: 'Space Grotesk', monospace; font-size: 15px; }
+    .desc { color: var(--muted); font-size: 14px; line-height: 1.4; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: var(--chip);
+      border: 1px solid var(--border);
+      color: var(--accent-2);
+      font-size: 12px;
+      letter-spacing: 0.2px;
+    }
+    @media (max-width: 640px) {
+      header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="logo">AC</div>
+        <h1>ArchiClean API Dashboard</h1>
+        <p class="subtitle">Carte rapide des routes principales, avec filtres par rôle. Mode simple, mais look soigné.</p>
+      </div>
+      <div class="panel" style="min-width:260px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+          <span style="color:var(--muted);">Serveur cible</span>
+        </div>
+        <div style="font-weight:600;">http://localhost:3000</div>
+        <small style="color:var(--muted);">Ajuste le port/host selon ton env.</small>
+      </div>
+    </header>
+
+    <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
+      <div class="filters">
+        <div class="pill active" data-role="all">Tous les rôles</div>
+        <div class="pill" data-role="client">Client</div>
+        <div class="pill" data-role="advisor">Advisor</div>
+        <div class="pill" data-role="director">Director</div>
+        <div class="pill" data-role="admin">Admin</div>
+        <input class="search" id="search" placeholder="Rechercher route ou description..." />
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="grid" id="cards"></div>
+  </div>
+
+  <script>
+    const routes = [
+      // Auth & Users
+      { area: 'Auth', name: 'Register client', method: 'POST', path: '/clients/register', roles: ['client'], desc: 'Créer un compte client' },
+      { area: 'Auth', name: 'Confirm email', method: 'GET', path: '/clients/confirm-email?token=', roles: ['client'], desc: 'Valider email via token' },
+      { area: 'Auth', name: 'Login', method: 'POST', path: '/clients/login', roles: ['client'], desc: 'Authentifier un client' },
+      { area: 'Auth', name: 'Refresh token', method: 'POST', path: '/auth/refresh', roles: ['client'], desc: 'Rafraichir le JWT' },
+
+      // Bank accounts
+      { area: 'Bank', name: 'Create bank account', method: 'POST', path: '/clients/:clientId/accounts', roles: ['client'], desc: 'Créer compte courant ou épargne' },
+      { area: 'Bank', name: 'List accounts', method: 'GET', path: '/clients/:clientId/accounts', roles: ['client'], desc: 'Lister les comptes actifs' },
+      { area: 'Bank', name: 'Update account name', method: 'PUT', path: '/clients/:clientId/accounts/:accountId', roles: ['client'], desc: 'Renommer un compte' },
+      { area: 'Bank', name: 'Delete account', method: 'DELETE', path: '/clients/:clientId/accounts/:accountId', roles: ['client'], desc: 'Désactiver un compte solde 0' },
+
+      // Savings
+      { area: 'Savings', name: 'Open savings', method: 'POST', path: '/api/savings', roles: ['client'], desc: 'Ouvrir un compte épargne' },
+      { area: 'Savings', name: 'Apply daily interest', method: 'POST', path: '/api/savings/apply-interest', roles: ['admin'], desc: 'Batch calcul intérêts' },
+
+      // Stocks
+      { area: 'Stocks', name: 'List stocks', method: 'GET', path: '/api/stocks', roles: ['client','advisor'], desc: 'Toutes les actions' },
+      { area: 'Stocks', name: 'List tradable stocks', method: 'GET', path: '/api/stocks/available', roles: ['client','advisor'], desc: 'Actions dispo' },
+      { area: 'Stocks', name: 'Get stock', method: 'GET', path: '/api/stocks/:id', roles: ['client','advisor'], desc: 'Détail action' },
+
+      // Orders
+      { area: 'Orders', name: 'Place order', method: 'POST', path: '/api/orders', roles: ['client','advisor'], desc: 'Achat/Vente' },
+
+      // Portfolio
+      { area: 'Portfolio', name: 'Get portfolio', method: 'GET', path: '/api/portfolio/:clientId', roles: ['client','advisor'], desc: 'Vue positions' },
+
+      // Transactions
+      { area: 'Transactions', name: 'History', method: 'GET', path: '/api/transactions/:clientId', roles: ['client','advisor'], desc: 'Historique des mouvements' },
+
+      // Messaging
+      { area: 'Messaging', name: 'Send private message', method: 'POST', path: '/api/messaging/private', roles: ['client','advisor'], desc: 'Message direct' },
+      { area: 'Messaging', name: 'Conversation history', method: 'GET', path: '/api/messaging/private/:peerId', roles: ['client','advisor'], desc: 'Historique DMs' },
+      { area: 'Messaging', name: 'Unread count', method: 'GET', path: '/api/messaging/private/unread', roles: ['client','advisor'], desc: 'Compteur non lus' },
+      { area: 'Messaging', name: 'Friend requests', method: 'GET', path: '/api/messaging/friends/requests', roles: ['client'], desc: 'Invitations en attente' },
+      { area: 'Messaging', name: 'Accept friend', method: 'POST', path: '/api/messaging/friends/:requestId/accept', roles: ['client'], desc: 'Accepter une demande' },
+      { area: 'Messaging', name: 'Block user', method: 'POST', path: '/api/messaging/block/:userId', roles: ['client'], desc: 'Bloquer un utilisateur' },
+      { area: 'Messaging', name: 'Create group', method: 'POST', path: '/api/messaging/groups', roles: ['client'], desc: 'Créer un groupe' },
+      { area: 'Messaging', name: 'Send group message', method: 'POST', path: '/api/messaging/groups/:groupId/messages', roles: ['client'], desc: 'Poster dans un groupe' },
+
+      // Advisors
+      { area: 'Advisor', name: 'Authenticate advisor', method: 'POST', path: '/api/advisors/login', roles: ['advisor'], desc: 'Login conseiller' },
+      { area: 'Advisor', name: 'Get assigned clients', method: 'GET', path: '/api/advisors/clients', roles: ['advisor'], desc: 'Portefeuille conseillers' },
+
+      // Directors
+      { area: 'Director', name: 'Authenticate director', method: 'POST', path: '/api/directors/login', roles: ['director'], desc: 'Login directeur' },
+      { area: 'Director', name: 'Create client by director', method: 'POST', path: '/api/directors/clients', roles: ['director'], desc: 'Onboard client' },
+      { area: 'Director', name: 'Ban client', method: 'POST', path: '/api/directors/clients/:id/ban', roles: ['director'], desc: 'Suspendre un client' },
+      { area: 'Director', name: 'Grant credit', method: 'POST', path: '/api/directors/credit', roles: ['director'], desc: 'Accorder un crédit' },
+
+      // Admin/ops
+      { area: 'Ops', name: 'Healthcheck', method: 'GET', path: '/health', roles: ['admin'], desc: 'Ping service' },
+    ];
+
+    const cards = document.getElementById('cards');
+    const search = document.getElementById('search');
+    const pills = Array.from(document.querySelectorAll('.pill'));
+    const stats = document.getElementById('stats');
+
+    let activeRole = 'all';
+    let searchTerm = '';
+
+    const renderStats = (list) => {
+      const byArea = list.reduce((acc, r) => {
+        acc[r.area] = (acc[r.area] || 0) + 1;
+        return acc;
+      }, {});
+      const areas = Object.entries(byArea).sort((a, b) => b[1] - a[1]);
+      const total = list.length;
+      stats.innerHTML = [
+        `<div class="stat-card"><span class="stat-label">Total routes</span><span class="stat-value">${total}</span></div>`,
+        ...areas.map(([area, count]) => `<div class="stat-card"><span class="stat-label">${area}</span><span class="stat-value">${count}</span></div>`),
+      ].join('');
+    };
+
+    const render = () => {
+      const filtered = routes.filter((r) => {
+        const roleMatch = activeRole === 'all' || r.roles.includes(activeRole);
+        const text = `${r.name} ${r.path} ${r.desc} ${r.area}`.toLowerCase();
+        const searchMatch = text.includes(searchTerm.toLowerCase());
+        return roleMatch && searchMatch;
+      });
+
+      cards.innerHTML = filtered.map((r) => `
+        <div class="card">
+          <div class="top">
+            <div>
+              <div class="path">${r.path}</div>
+              <div class="desc">${r.desc}</div>
+            </div>
+            <span class="method ${r.method}">${r.method}</span>
+          </div>
+          <div class="chips">
+            <span class="chip">${r.area}</span>
+            ${r.roles.map((role) => `<span class="chip">${role}</span>`).join('')}
+          </div>
+          <div class="desc" style="color: var(--muted);">${r.name}</div>
+        </div>
+      `).join('');
+
+      renderStats(filtered);
+    };
+
+    pills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        pills.forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeRole = pill.dataset.role;
+        render();
+      });
+    });
+
+    search.addEventListener('input', (e) => {
+      searchTerm = e.target.value;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Backend Toggle - Banque AVENIR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1221;
+      --panel: #0f172a;
+      --border: rgba(148, 163, 184, 0.25);
+      --accent: #38bdf8;
+      --accent-2: #34d399;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.12), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(52, 211, 153, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 42px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+      margin-bottom: 20px;
+    }
+    .panel h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .info-label {
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .info-value {
+      font-family: monospace;
+      color: var(--accent-2);
+    }
+    button {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.3);
+    }
+    .log-area {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .log-entry.success {
+      color: var(--accent-2);
+    }
+    .log-entry.error {
+      color: #f87171;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .status-online {
+      background: var(--accent-2);
+      box-shadow: 0 0 10px var(--accent-2);
+    }
+    .status-offline {
+      background: #f87171;
+      box-shadow: 0 0 10px #f87171;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Backend Toggle sera injecté ici automatiquement -->
+  
+  <div class="container">
+    <div class="header">
+      <h1>🧪 Test Backend Toggle</h1>
+      <p>Testez la bascule entre NestJS et Fastify</p>
+    </div>
+
+    <div class="panel">
+      <h2>📊 Informations Backend</h2>
+      <div class="info-grid">
+        <div class="info-label">Backend actuel:</div>
+        <div class="info-value" id="currentBackend">-</div>
+        
+        <div class="info-label">Port:</div>
+        <div class="info-value" id="currentPort">-</div>
+        
+        <div class="info-label">URL de base:</div>
+        <div class="info-value" id="currentBaseUrl">-</div>
+        
+        <div class="info-label">Statut:</div>
+        <div class="info-value">
+          <span class="status-indicator" id="statusIndicator"></span>
+          <span id="statusText">Vérification...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🔧 Actions de test</h2>
+      <button onclick="testHealthCheck()">🏥 Health Check</button>
+      <button onclick="testStocks()">📈 GET /stocks</button>
+      <button onclick="testClients()">👥 GET /clients</button>
+      <button onclick="testApiRoutes()">📋 Tester toutes les routes</button>
+      <button onclick="clearLogs()">🗑️ Effacer les logs</button>
+
+      <div class="log-area" id="logArea">
+        <div class="log-entry">Prêt pour les tests...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>ℹ️ Instructions</h2>
+      <ul style="line-height: 1.8; color: var(--muted); margin-left: 20px;">
+        <li>Utilisez le <strong style="color: var(--accent)">toggle en haut à gauche</strong> pour basculer entre NestJS et Fastify</li>
+        <li>Le backend sélectionné est sauvegardé dans <code style="color: var(--accent-2)">localStorage</code></li>
+        <li>La page se recharge automatiquement après changement</li>
+        <li>Testez les endpoints pour vérifier la connectivité</li>
+        <li>Consultez les logs pour voir les requêtes HTTP</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="/backend-toggle.js"></script>
+  <script>
+    // Update display with current backend info
+    function updateDisplay() {
+      const backend = getCurrentBackend();
+      document.getElementById('currentBackend').textContent = backend.name;
+      document.getElementById('currentPort').textContent = backend.port;
+      document.getElementById('currentBaseUrl').textContent = `http://localhost:${backend.port}`;
+    }
+
+    // Log helper
+    function log(message, type = 'info') {
+      const logArea = document.getElementById('logArea');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      logArea.appendChild(entry);
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('logArea').innerHTML = '<div class="log-entry">Logs effacés...</div>';
+    }
+
+    // Test health check
+    async function testHealthCheck() {
+      try {
+        log('Testing /health endpoint...');
+        const url = getApiUrl('/health');
+        log(`Request: GET ${url}`);
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (response.ok) {
+          log(`✅ SUCCESS (${response.status}): ${JSON.stringify(data)}`, 'success');
+          updateStatus(true);
+        } else {
+          log(`❌ FAILED (${response.status}): ${JSON.stringify(data)}`, 'error');
+          updateStatus(false);
+        }
+      } catch (err) {
+        log(`❌ ERROR: ${err.message}`, 'error');
+        updateStatus(false);
+      }
+    }
+
+    // Test stocks endpoint
+    async function testStocks() {
+      try {
+        log('Testing /stocks endpoint...');
+        const url = getApiUrl('/stocks');
+        log(`Request: GET ${url}`);
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const stockCount = Array.isArray(data) ? data.length : (data.stocks?.length || 0);
+          log(`✅ SUCCESS (${response.status}): Retrieved ${stockCount} stocks`, 'success');
+        } else {
+          log(`❌ FAILED (${response.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`❌ ERROR: ${err.message}`, 'error');
+      }
+    }
+
+    // Test clients endpoint
+    async function testClients() {
+      try {
+        log('Testing /clients endpoint...');
+        const url = getApiUrl('/clients');
+        log(`Request: GET ${url}`);
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const clientCount = Array.isArray(data) ? data.length : (data.clients?.length || 0);
+          log(`✅ SUCCESS (${response.status}): Retrieved ${clientCount} clients`, 'success');
+        } else {
+          log(`❌ FAILED (${response.status}): ${JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log(`❌ ERROR: ${err.message}`, 'error');
+      }
+    }
+
+    // Test multiple routes
+    async function testApiRoutes() {
+      const routes = ['/health', '/stocks', '/clients'];
+      log('=== Testing multiple routes ===');
+      
+      for (const route of routes) {
+        try {
+          const url = getApiUrl(route);
+          log(`Testing ${route}...`);
+          const response = await fetch(url);
+          
+          if (response.ok) {
+            log(`  ✅ ${route} (${response.status})`, 'success');
+          } else {
+            log(`  ❌ ${route} (${response.status})`, 'error');
+          }
+        } catch (err) {
+          log(`  ❌ ${route}: ${err.message}`, 'error');
+        }
+        
+        // Small delay between requests
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      log('=== Test completed ===');
+    }
+
+    // Update status indicator
+    function updateStatus(online) {
+      const indicator = document.getElementById('statusIndicator');
+      const statusText = document.getElementById('statusText');
+      
+      if (online) {
+        indicator.className = 'status-indicator status-online';
+        statusText.textContent = 'En ligne';
+      } else {
+        indicator.className = 'status-indicator status-offline';
+        statusText.textContent = 'Hors ligne';
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      updateDisplay();
+      testHealthCheck(); // Auto-test on load
+    });
+
+    // Listen for backend changes
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'selectedBackend') {
+        updateDisplay();
+        log(`Backend changed to ${getCurrentBackend().name}`, 'info');
+      }
+    });
+  </script>
+</body>
+</html>

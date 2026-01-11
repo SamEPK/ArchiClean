@@ -13,8 +13,16 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale = 'fr'; // Default to French
   }
 
+  let messages;
+  try {
+    messages = (await import(`@/messages/${locale}.json`)).default;
+  } catch {
+    // Fallback to French if locale file not found
+    messages = (await import('@/messages/fr.json')).default;
+  }
+
   return {
     locale,
-    messages: (await import(`../public/locales/${locale}.json`)).default
+    messages
   };
 });

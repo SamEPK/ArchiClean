@@ -10,6 +10,7 @@ import { IUserRepository } from '@domain/repositories/IUserRepository';
 import { IClientRepository } from '@domain/repositories/IClientRepository';
 import { IAdvisorRepository } from '@domain/repositories/IAdvisorRepository';
 import { IMessageRepository } from '@domain/repositories/IMessageRepository';
+import { IStockRepository } from '@domain/repositories/IStockRepository';
 import * as bcrypt from 'bcryptjs';
 import { uuidv4 } from '@infrastructure/utils/uuid-helper';
 
@@ -27,7 +28,8 @@ export class TestDataSeeder {
     private userRepository: IUserRepository,
     private clientRepository: IClientRepository,
     private advisorRepository: IAdvisorRepository,
-    private messageRepository: IMessageRepository
+    private messageRepository: IMessageRepository,
+    private stockRepository?: IStockRepository
   ) {}
 
   async seedAll() {
@@ -338,29 +340,47 @@ export class TestDataSeeder {
 
   private async seedStocks() {
     const stocks = [
-      { symbol: 'AAPL', name: 'Apple Inc.', companyName: 'Apple Inc.', currentPrice: 175.50, isAvailable: true },
-      { symbol: 'MSFT', name: 'Microsoft Corp.', companyName: 'Microsoft Corporation', currentPrice: 380.20, isAvailable: true },
-      { symbol: 'GOOGL', name: 'Alphabet Inc.', companyName: 'Alphabet Inc.', currentPrice: 140.80, isAvailable: true },
-      { symbol: 'AMZN', name: 'Amazon.com Inc.', companyName: 'Amazon.com Inc.', currentPrice: 165.30, isAvailable: true },
-      { symbol: 'TSLA', name: 'Tesla Inc.', companyName: 'Tesla Inc.', currentPrice: 245.75, isAvailable: true },
-      { symbol: 'META', name: 'Meta Platforms', companyName: 'Meta Platforms Inc.', currentPrice: 425.60, isAvailable: true },
-      { symbol: 'NVDA', name: 'NVIDIA Corp.', companyName: 'NVIDIA Corporation', currentPrice: 495.20, isAvailable: true },
-      { symbol: 'BNP', name: 'BNP Paribas', companyName: 'BNP Paribas SA', currentPrice: 58.40, isAvailable: true },
+      { symbol: 'AAPL', name: 'Apple Inc.', companyName: 'Apple Inc.', price: 175.50, isAvailable: true },
+      { symbol: 'MSFT', name: 'Microsoft Corp.', companyName: 'Microsoft Corporation', price: 380.20, isAvailable: true },
+      { symbol: 'GOOGL', name: 'Alphabet Inc.', companyName: 'Alphabet Inc.', price: 140.80, isAvailable: true },
+      { symbol: 'AMZN', name: 'Amazon.com Inc.', companyName: 'Amazon.com Inc.', price: 165.30, isAvailable: true },
+      { symbol: 'TSLA', name: 'Tesla Inc.', companyName: 'Tesla Inc.', price: 245.75, isAvailable: true },
+      { symbol: 'META', name: 'Meta Platforms', companyName: 'Meta Platforms Inc.', price: 425.60, isAvailable: true },
+      { symbol: 'NVDA', name: 'NVIDIA Corp.', companyName: 'NVIDIA Corporation', price: 495.20, isAvailable: true },
+      { symbol: 'BNP', name: 'BNP Paribas', companyName: 'BNP Paribas SA', price: 58.40, isAvailable: true },
+      { symbol: 'TTE', name: 'TotalEnergies', companyName: 'TotalEnergies SE', price: 62.15, isAvailable: true },
+      { symbol: 'MC', name: 'LVMH', companyName: 'LVMH Moët Hennessy Louis Vuitton', price: 715.80, isAvailable: true },
     ];
 
     for (const stockData of stocks) {
       try {
+        // Vérifier si le stock existe déjà
+        if (this.stockRepository) {
+          const existing = await this.stockRepository.findBySymbol(stockData.symbol);
+          if (existing) {
+            console.log(`⚠️  Stock already exists: ${stockData.symbol}`);
+            this.createdStocks.push(existing);
+            continue;
+          }
+        }
+
         const stock = new Stock(
           uuidv4(),
           stockData.symbol,
           stockData.name,
           stockData.companyName,
           stockData.isAvailable,
+          stockData.price,
           new Date()
         );
 
+        // Sauvegarder dans le repository si disponible
+        if (this.stockRepository) {
+          await this.stockRepository.save(stock);
+        }
+
         this.createdStocks.push(stock);
-        console.log(`📈 Stock created: ${stock.symbol} - ${stock.name}`);
+        console.log(`📈 Stock created: ${stock.symbol} - ${stock.name} (${stockData.price}€)`);
       } catch (error) {
         console.log(`❌ Error creating stock ${stockData.symbol}:`, error instanceof Error ? error.message : 'Unknown');
       }

@@ -9,7 +9,8 @@ export class CreateStockUseCase {
     symbol: string,
     name: string,
     companyName: string,
-    isAvailable: boolean = true
+    isAvailable: boolean = true,
+    price: number = 100
   ): Promise<Stock> {
     // Validate inputs
     if (!symbol || symbol.trim().length === 0) {
@@ -37,6 +38,7 @@ export class CreateStockUseCase {
       name.trim(),
       companyName.trim(),
       isAvailable,
+      price,
       new Date()
     );
 

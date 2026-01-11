@@ -137,7 +137,17 @@ async function bootstrap(): Promise<void> {
 
     const advisorRepository = app.get('IAdvisorRepository');
     const messageRepository = app.get('IMessageRepository');
-    const seeder = new TestDataSeeder(userRepository, clientRepository, advisorRepository, messageRepository);
+    
+    // Essayer d'obtenir le stockRepository (peut ne pas être disponible dans tous les modes)
+    let stockRepository;
+    try {
+      stockRepository = app.get('IStockRepository');
+      console.log('[bootstrap] StockRepository loaded for seeding');
+    } catch {
+      console.log('[bootstrap] StockRepository not available, stocks will be created in memory only');
+    }
+    
+    const seeder = new TestDataSeeder(userRepository, clientRepository, advisorRepository, messageRepository, stockRepository);
     await seeder.seedAll();
   } catch (error) {
     console.warn('[bootstrap] Seeding skipped:', error instanceof Error ? error.message : 'Unknown error');

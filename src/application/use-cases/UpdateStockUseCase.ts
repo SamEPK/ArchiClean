@@ -10,6 +10,7 @@ export class UpdateStockUseCase {
       name?: string;
       companyName?: string;
       isAvailable?: boolean;
+      price?: number;
     }
   ): Promise<Stock> {
     const stock = await this.stockRepository.findById(stockId);
@@ -33,6 +34,7 @@ export class UpdateStockUseCase {
       updates.name !== undefined ? updates.name.trim() : stock.name,
       updates.companyName !== undefined ? updates.companyName.trim() : stock.companyName,
       updates.isAvailable !== undefined ? updates.isAvailable : stock.isAvailable,
+      updates.price !== undefined ? updates.price : stock.price,
       stock.createdAt
     );
 

@@ -17,15 +17,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize from localStorage if available (client-side only)
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+        try {
+          return JSON.parse(storedUser);
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
+    // Double-check localStorage on mount (for SSR hydration)
     const storedUser = localStorage.getItem('user');
     if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        if (parsed && parsed.id) {
+          setUser(parsed);
+        }
       } catch (error) {
         console.error('Failed to parse stored user:', error);
         localStorage.removeItem('user');
@@ -41,10 +57,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await apiClient.login(email, password, role);
+      console.log('[AuthContext] Login response:', response);
+      
+      // Check if login was successful (backend returns success: false on failure)
+      if (response.success === false) {
+        throw new Error(response.message || 'Échec de la connexion');
+      }
+      
       const userData = response.user || response.client || response.advisor || response.director;
+      
+      if (!userData || !userData.id) {
+        console.error('[AuthContext] No user data in response:', response);
+        throw new Error('Données utilisateur invalides reçues du serveur');
+      }
+      
+      console.log('[AuthContext] Setting user:', userData);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
+      console.error('[AuthContext] Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);

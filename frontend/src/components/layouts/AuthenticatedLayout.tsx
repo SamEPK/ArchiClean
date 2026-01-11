@@ -12,14 +12,16 @@ import {
   Briefcase, 
   PieChart, 
   Settings, 
-  Bell 
+  Bell,
+  MessageSquare,
+  Wallet
 } from 'lucide-react';
 
-export default function DashboardLayout({
-  children,
-}: {
+interface AuthenticatedLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const locale = useLocale();
@@ -33,9 +35,9 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Top Navigation Bar - Institutional Style */}
       <nav className="bg-primary-900 text-white shadow-md z-50">
-        <div className="container-bank mx-auto flex justify-between items-center h-16 px-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-4">
           {/* Logo */}
-          <Link href={`/${locale}`} className="flex items-center gap-2 group">
+          <Link href={`/${locale}/dashboard/client`} className="flex items-center gap-2 group">
              <div className="bg-white/10 p-2 rounded group-hover:bg-white/20 transition-colors">
                 <Building2 size={24} className="text-white" />
              </div>
@@ -46,20 +48,26 @@ export default function DashboardLayout({
 
           {/* User Menu & Actions */}
           <div className="flex items-center gap-6">
-            <button className="relative p-2 hover:bg-white/10 rounded-full transition-colors group">
+            <Link 
+              href={`/${locale}/messages`}
+              className="relative p-2 hover:bg-white/10 rounded-full transition-colors group"
+            >
                <Bell size={20} className="text-primary-100 group-hover:text-white" />
                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-secondary-500 rounded-full border-2 border-primary-900"></span>
-            </button>
+            </Link>
             
-            <div className="hidden md:flex items-center gap-3 pl-6 border-l border-primary-800">
+            <Link 
+              href={`/${locale}/profile`}
+              className="hidden md:flex items-center gap-3 pl-6 border-l border-primary-800 hover:bg-white/10 rounded px-3 py-1 transition-colors"
+            >
                <div className="flex flex-col items-end">
                   <span className="font-bold text-sm leading-none">{user?.firstName} {user?.lastName}</span>
-                  <span className="text-xs text-primary-200 uppercase tracking-wider">{user?.role}</span>
+                  <span className="text-xs text-primary-200 uppercase tracking-wider">{user?.role || 'Client'}</span>
                </div>
                <div className="w-10 h-10 bg-primary-700 rounded-full flex items-center justify-center border border-primary-600">
                   <User size={20} />
                </div>
-            </div>
+            </Link>
 
             <button 
               onClick={handleLogout}
@@ -74,14 +82,14 @@ export default function DashboardLayout({
 
       {/* Secondary Navigation (Tabs) */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-        <div className="container-bank mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
            <div className="flex gap-1 overflow-x-auto">
               <NavLink href={`/${locale}/dashboard/client`} active={pathname === `/${locale}/dashboard/client`}>
                  <Briefcase size={18} />
                  <span>Ma Synthèse</span>
               </NavLink>
               <NavLink href={`/${locale}/accounts`} active={pathname?.includes('/accounts')}>
-                 <PieChart size={18} />
+                 <Wallet size={18} />
                  <span>Mes Comptes</span>
               </NavLink>
               <NavLink href={`/${locale}/portfolio`} active={pathname?.includes('/portfolio')}>
@@ -89,7 +97,7 @@ export default function DashboardLayout({
                  <span>Portfolio</span>
               </NavLink>
               <NavLink href={`/${locale}/messages`} active={pathname?.includes('/messages')}>
-                 <Bell size={18} />
+                 <MessageSquare size={18} />
                  <span>Messages</span>
               </NavLink>
               <NavLink href={`/${locale}/profile`} active={pathname?.includes('/profile')}>
@@ -101,15 +109,13 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 py-8">
-        <div className="container-bank mx-auto px-4">
-           {children}
-        </div>
+      <main className="flex-1">
+        {children}
       </main>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
-         <div className="container-bank mx-auto px-4 text-center text-sm text-gray-500">
+         <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
             <p>&copy; 2026 Banque AVENIR. Tous droits réservés. Sécurité garantie.</p>
          </div>
       </footer>

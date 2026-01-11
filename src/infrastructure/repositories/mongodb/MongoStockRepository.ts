@@ -6,6 +6,7 @@ interface StockDocument extends Document {
   symbol: string;
   name: string;
   companyName: string;
+  price: number;
   isAvailable: boolean;
   createdAt: Date;
 }
@@ -14,6 +15,7 @@ const StockSchema = new Schema<StockDocument>({
   symbol: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   companyName: { type: String, required: true },
+  price: { type: Number, default: 100 },
   isAvailable: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
 });
@@ -28,6 +30,7 @@ export class MongoStockRepository implements IStockRepository {
       doc.name,
       doc.companyName,
       doc.isAvailable,
+      doc.price || 100,
       doc.createdAt,
     );
   }
@@ -38,6 +41,7 @@ export class MongoStockRepository implements IStockRepository {
       symbol: stock.symbol,
       name: stock.name,
       companyName: stock.companyName,
+      price: stock.price,
       isAvailable: stock.isAvailable,
       createdAt: stock.createdAt,
     });
@@ -70,6 +74,7 @@ export class MongoStockRepository implements IStockRepository {
       stock.id,
       {
         isAvailable: stock.isAvailable,
+        price: stock.price,
       },
       { new: true },
     );

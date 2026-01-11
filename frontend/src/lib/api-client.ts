@@ -159,6 +159,90 @@ class ApiClient {
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
+
+  // Client Dashboard methods
+  async getClientAccounts(clientId: string): Promise<any> {
+    return this.get(`/clients/${clientId}/accounts`, { useCache: true });
+  }
+
+  async getClientTransactions(clientId: string, limit: number = 10): Promise<any> {
+    return this.get(`/transactions/history/${clientId}?limit=${limit}`, { useCache: true });
+  }
+
+  async getClientPortfolio(clientId: string): Promise<any> {
+    return this.get(`/portfolio/${clientId}`, { useCache: true });
+  }
+
+  async getStocks(): Promise<any> {
+    return this.get('/stocks', { useCache: true });
+  }
+
+  // Transaction methods
+  async deposit(accountId: string, amount: number, description?: string): Promise<any> {
+    return this.post('/transactions/deposit', { accountId, amount, description: description || 'Dépôt' });
+  }
+
+  async withdraw(accountId: string, amount: number, description?: string): Promise<any> {
+    return this.post('/transactions/withdraw', { accountId, amount, description: description || 'Retrait' });
+  }
+
+  async transfer(fromAccountId: string, toAccountId: string, amount: number, description?: string): Promise<any> {
+    return this.post('/transactions/transfer', { fromAccountId, toAccountId, amount, description: description || 'Virement' });
+  }
+
+  // Bank account methods
+  async createBankAccount(clientId: string, accountName: string, initialBalance?: number, currency?: string): Promise<any> {
+    const data: any = { accountName };
+    if (initialBalance && initialBalance > 0) {
+      data.initialBalance = initialBalance;
+    }
+    if (currency) {
+      data.currency = currency;
+    }
+    return this.post(`/clients/${clientId}/accounts`, data);
+  }
+
+  // Messaging methods
+  async getClientConversations(clientId: string): Promise<any> {
+    return this.get(`/conversations/client/${clientId}`, { useCache: true });
+  }
+
+  async getConversationMessages(conversationId: string): Promise<any> {
+    return this.get(`/conversations/${conversationId}/messages`, { useCache: false });
+  }
+
+  async sendMessage(conversationId: string, content: string, senderId: string): Promise<any> {
+    return this.post(`/conversations/${conversationId}/messages`, { content, senderId });
+  }
+
+  async startConversation(clientId: string, subject: string, initialMessage: string): Promise<any> {
+    return this.post('/conversations', { clientId, subject, initialMessage });
+  }
+
+  // Stock/Portfolio methods
+  async getAvailableStocks(): Promise<any> {
+    return this.get('/stocks/available', { useCache: true });
+  }
+
+  async getStock(stockId: string): Promise<any> {
+    return this.get(`/stocks/${stockId}`, { useCache: true });
+  }
+
+  async placeOrder(userId: string, accountId: string, stockId: string, type: 'BUY' | 'SELL', quantity: number, price: number): Promise<any> {
+    return this.post('/orders', { userId, accountId, stockId, type, quantity, price });
+  }
+
+  async executeOrder(orderId: string, executionPrice: number): Promise<any> {
+    return this.post(`/orders/${orderId}/execute`, { executionPrice });
+  }
+
+  async getMyOrders(userId: string): Promise<any> {
+    return this.get(`/orders/my/${userId}`, { useCache: false });
+  }
+
+  async getStockPrice(stockId: string): Promise<any> {
+    return this.get(`/orders/stock/${stockId}/price`, { useCache: false });
+  }
 }
 
 export const apiClient = new ApiClient();

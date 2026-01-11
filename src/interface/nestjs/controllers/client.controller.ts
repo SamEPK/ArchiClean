@@ -87,11 +87,26 @@ export class ClientController {
         body.phoneNumber
       );
 
+      // Generate JWT token for the newly registered client
+      const payload = {
+        sub: result.client.id,
+        email: result.client.email,
+        type: 'client',
+      };
+      const token = this.jwtService.sign(payload);
+
       return {
         success: true,
-        message: 'Registration successful. Please check your email to confirm your account.',
-        clientId: result.client.id,
-        email: result.client.email,
+        message: 'Registration successful. You are now logged in.',
+        token,
+        client: {
+          id: result.client.id,
+          email: result.client.email,
+          firstName: result.client.firstName,
+          lastName: result.client.lastName,
+          phoneNumber: result.client.phoneNumber,
+          role: 'CLIENT',
+        },
       };
     } catch (error) {
       return {
@@ -149,6 +164,7 @@ export class ClientController {
             firstName: result.client.firstName,
             lastName: result.client.lastName,
             phoneNumber: result.client.phoneNumber,
+            role: 'CLIENT',
           },
         };
       }

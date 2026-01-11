@@ -23,11 +23,11 @@ export const NavBar: React.FC<NavBarProps> = ({ className }) => {
 
   const navigation = user
     ? [
-        { name: t('dashboard'), href: `/${locale}/dashboard` },
+        { name: t('dashboard'), href: `/${locale}/dashboard/client` },
         { name: t('accounts'), href: `/${locale}/accounts` },
-        { name: t('transactions'), href: `/${locale}/transactions` },
-        { name: t('stocks'), href: `/${locale}/stocks` },
+        { name: t('portfolio'), href: `/${locale}/portfolio` },
         { name: t('messages'), href: `/${locale}/messages` },
+        { name: t('profile'), href: `/${locale}/profile` },
       ]
     : [
         { name: t('home'), href: `/${locale}` },

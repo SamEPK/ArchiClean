@@ -19,12 +19,16 @@ interface AccountsGridProps {
   accounts: Account[];
   className?: string;
   onAccountClick?: (account: Account) => void;
+  onTransfer?: (account: Account) => void;
+  onDetails?: (account: Account) => void;
 }
 
 export const AccountsGrid: React.FC<AccountsGridProps> = ({
   accounts,
   className,
   onAccountClick,
+  onTransfer,
+  onDetails,
 }) => {
   const getTypeLabel = (type: Account['type']) => {
     switch (type) {
@@ -89,13 +93,19 @@ export const AccountsGrid: React.FC<AccountsGridProps> = ({
       className={clsx('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6', className)}
     >
       {accounts.map((account) => (
-        <motion.div key={account.id} variants={itemVariants}>
+        <motion.div 
+          key={account.id} 
+          variants={itemVariants}
+          onClick={() => onAccountClick?.(account)}
+          className={clsx(
+            onAccountClick && 'cursor-pointer'
+          )}
+        >
           <Card
             className={clsx(
-              'cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden',
+              'hover:shadow-xl transition-all duration-300 overflow-hidden',
               onAccountClick && 'hover:scale-105'
             )}
-            onClick={() => onAccountClick?.(account)}
           >
             {/* Gradient header */}
             <div
@@ -135,7 +145,7 @@ export const AccountsGrid: React.FC<AccountsGridProps> = ({
                   className="flex-1 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Handle transfer action
+                    onTransfer?.(account);
                   }}
                 >
                   Virement
@@ -144,7 +154,7 @@ export const AccountsGrid: React.FC<AccountsGridProps> = ({
                   className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Handle details action
+                    onDetails?.(account);
                   }}
                 >
                   Détails

@@ -90,7 +90,8 @@ export class PersistentClientRepository implements IClientRepository {
   }
 
   async findByEmail(email: string): Promise<Client | null> {
-    return Array.from(this.clients.values()).find(c => c.email === email) || null;
+    const normalizedEmail = email.toLowerCase().trim();
+    return Array.from(this.clients.values()).find(c => c.email.toLowerCase() === normalizedEmail) || null;
   }
 
   async findAll(): Promise<Client[]> {

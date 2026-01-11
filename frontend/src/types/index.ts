@@ -5,6 +5,11 @@ export interface User {
   lastName: string;
   role: UserRole;
   phoneNumber?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
   isActive: boolean;
   createdAt: string;
   avatar?: string;

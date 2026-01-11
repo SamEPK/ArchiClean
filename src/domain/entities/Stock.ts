@@ -5,6 +5,7 @@ export class Stock {
     public readonly name: string,
     public readonly companyName: string,
     public isAvailable: boolean,
+    public price: number = 100,
     public readonly createdAt: Date = new Date(),
   ) {
     this.validateSymbol();
@@ -25,5 +26,12 @@ export class Stock {
 
   public makeUnavailable(): void {
     this.isAvailable = false;
+  }
+
+  public updatePrice(newPrice: number): void {
+    if (newPrice <= 0) {
+      throw new Error('Price must be positive');
+    }
+    this.price = newPrice;
   }
 }

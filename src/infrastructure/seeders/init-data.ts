@@ -94,11 +94,11 @@ export async function initializeData(
   // === ACTIONS BOURSIÈRES ===
 
   const stocks = [
-    { symbol: 'AAPL', name: 'Apple Inc.', companyName: 'Apple Inc.', isAvailable: true },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', companyName: 'Alphabet Inc. (Google)', isAvailable: true },
-    { symbol: 'MSFT', name: 'Microsoft Corporation', companyName: 'Microsoft Corporation', isAvailable: true },
-    { symbol: 'TSLA', name: 'Tesla Inc.', companyName: 'Tesla Inc.', isAvailable: true },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.', companyName: 'Amazon.com Inc.', isAvailable: false },
+    { symbol: 'AAPL', name: 'Apple Inc.', companyName: 'Apple Inc.', price: 175.50, isAvailable: true },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', companyName: 'Alphabet Inc. (Google)', price: 140.80, isAvailable: true },
+    { symbol: 'MSFT', name: 'Microsoft Corporation', companyName: 'Microsoft Corporation', price: 380.20, isAvailable: true },
+    { symbol: 'TSLA', name: 'Tesla Inc.', companyName: 'Tesla Inc.', price: 245.75, isAvailable: true },
+    { symbol: 'AMZN', name: 'Amazon.com Inc.', companyName: 'Amazon.com Inc.', price: 165.30, isAvailable: false },
   ];
 
   for (const stockData of stocks) {
@@ -108,11 +108,12 @@ export async function initializeData(
       stockData.name,
       stockData.companyName,
       stockData.isAvailable,
+      stockData.price,
       new Date(),
     );
     await stockRepository.save(stock);
     const status = stockData.isAvailable ? '✅' : '❌';
-    console.log(`${status} Action créée: ${stockData.symbol} - ${stockData.name}`);
+    console.log(`${status} Action créée: ${stockData.symbol} - ${stockData.name} (${stockData.price}€)`);
   }
 
   console.log('\n✅ Initialisation terminée!\n');

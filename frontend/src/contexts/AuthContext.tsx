@@ -17,38 +17,29 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Initialize from localStorage if available (client-side only)
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
-        try {
-          return JSON.parse(storedUser);
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
-  });
+  // Ne pas initialiser depuis localStorage pour éviter l'erreur d'hydratation
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Double-check localStorage on mount (for SSR hydration)
-    const storedUser = localStorage.getItem('user');
-    if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
-      try {
-        const parsed = JSON.parse(storedUser);
-        if (parsed && parsed.id) {
-          setUser(parsed);
+    // Charger depuis localStorage uniquement côté client après le montage
+    // Cela évite l'erreur d'hydratation SSR
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed && parsed.id) {
+            setUser(parsed);
+          }
+        } catch (error) {
+          console.error('Failed to parse stored user:', error);
+          localStorage.removeItem('user');
         }
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('user');
-      }
-    } else {
+      } else {
         // Clean up invalid state
         if (storedUser) localStorage.removeItem('user');
+      }
     }
     setIsLoading(false);
   }, []);

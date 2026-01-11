@@ -17,7 +17,7 @@ interface NavBarProps {
 export const NavBar: React.FC<NavBarProps> = ({ className }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const t = useTranslations('nav');
   const locale = useLocale();
 
@@ -73,7 +73,13 @@ export const NavBar: React.FC<NavBarProps> = ({ className }) => {
           {/* Right side */}
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher />
-            {user ? (
+            {isLoading ? (
+              // Afficher un skeleton pendant le chargement pour éviter l'erreur d'hydratation
+              <div className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-20 h-8 bg-gray-200 rounded animate-pulse" />
+              </div>
+            ) : user ? (
               <>
                 <Link href={`/${locale}/profile`}>
                   <Avatar

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardNavbar({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
   const locale = useLocale();
 
@@ -53,15 +53,25 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-secondary-500 rounded-full border-2 border-primary-900"></span>
             </Link>
             
-            <div className="hidden md:flex items-center gap-3 pl-6 border-l border-primary-800">
-               <div className="flex flex-col items-end">
+            {isLoading ? (
+              <div className="hidden md:flex items-center gap-3 pl-6 border-l border-primary-800">
+                <div className="flex flex-col items-end gap-1">
+                  <div className="w-24 h-3 bg-primary-700 rounded animate-pulse"></div>
+                  <div className="w-16 h-2 bg-primary-700 rounded animate-pulse"></div>
+                </div>
+                <div className="w-10 h-10 bg-primary-700 rounded-full animate-pulse border border-primary-600"></div>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-3 pl-6 border-l border-primary-800">
+                <div className="flex flex-col items-end">
                   <span className="font-bold text-sm leading-none">{user?.firstName} {user?.lastName}</span>
                   <span className="text-xs text-primary-200 uppercase tracking-wider">{user?.role}</span>
-               </div>
-               <div className="w-10 h-10 bg-primary-700 rounded-full flex items-center justify-center border border-primary-600">
+                </div>
+                <div className="w-10 h-10 bg-primary-700 rounded-full flex items-center justify-center border border-primary-600">
                   <User size={20} />
-               </div>
-            </div>
+                </div>
+              </div>
+            )}
 
             <button 
               onClick={handleLogout}

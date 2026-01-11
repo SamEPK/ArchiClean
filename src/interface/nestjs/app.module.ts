@@ -11,6 +11,7 @@ import { TransactionModule } from './modules/transaction.module';
 import { AdvisorModule } from './modules/advisor.module';
 import { DirectorModule } from './modules/director.module';
 import { DashboardModule } from './modules/dashboard.module';
+import { SSEModule } from './modules/sse.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DashboardModule } from './modules/dashboard.module';
     AdvisorModule,
     DirectorModule,
     DashboardModule, // Pedagogical dashboard for NestJS demonstration
+    SSEModule, // Feed actualités + Notifications en SSE (Server-Sent Events)
   ],
 })
 export class AppModule {}

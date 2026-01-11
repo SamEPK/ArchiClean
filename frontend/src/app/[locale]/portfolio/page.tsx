@@ -9,7 +9,6 @@ import { Button } from '@/components/atoms/Button';
 import { Badge } from '@/components/atoms/Badge';
 import { StocksList } from '@/components/organisms/StocksList';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthenticatedLayout } from '@/components/layouts/AuthenticatedLayout';
 
 interface Stock {
   id: string;
@@ -334,7 +333,6 @@ export default function PortfolioPage() {
   }
 
   return (
-    <AuthenticatedLayout>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-800 text-white">
@@ -678,6 +676,5 @@ export default function PortfolioPage() {
         )}
       </AnimatePresence>
     </div>
-    </AuthenticatedLayout>
   );
 }

@@ -99,16 +99,46 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
   ) {
     try {
       const senderId = client.data.userId as string;
+      const senderRole = client.data.userRole as string;
       const message = await this.sendGroupMessageUseCase.execute(data.groupId, senderId, data.content);
 
+      // Enrichir le message avec les infos du rôle pour distinction visuelle
+      const enrichedMessage = {
+        ...message,
+        senderRole,
+        isDirector: senderRole === 'director',
+        isAdvisor: senderRole === 'advisor',
+        roleLabel: this.getRoleLabel(senderRole),
+        roleBadgeColor: this.getRoleBadgeColor(senderRole),
+      };
+
       // Broadcast to all group members
-      this.server.to(`group_${data.groupId}`).emit('receive:group-message', { message });
+      this.server.to(`group_${data.groupId}`).emit('receive:group-message', { message: enrichedMessage });
 
       return { success: true, messageId: message.id };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       client.emit('error', { message });
       return { success: false, error: message };
+    }
+  }
+
+  // ===== HELPER METHODS FOR ROLE DISPLAY =====
+  private getRoleLabel(role: string): string {
+    switch (role) {
+      case 'director': return '👑 Directeur';
+      case 'advisor': return '💼 Conseiller';
+      case 'client': return '👤 Client';
+      default: return role;
+    }
+  }
+
+  private getRoleBadgeColor(role: string): string {
+    switch (role) {
+      case 'director': return '#FFD700'; // Gold
+      case 'advisor': return '#4CAF50'; // Green
+      case 'client': return '#2196F3'; // Blue
+      default: return '#9E9E9E'; // Gray
     }
   }
 

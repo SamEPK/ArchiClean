@@ -9,7 +9,6 @@ import { TransferZone } from '@/components/organisms/TransferZone';
 import { Card, CardContent, CardTitle } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthenticatedLayout } from '@/components/layouts/AuthenticatedLayout';
 
 interface Account {
   id: string;
@@ -231,7 +230,6 @@ export default function AccountsPage() {
   }
 
   return (
-    <AuthenticatedLayout>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
@@ -647,6 +645,5 @@ export default function AccountsPage() {
         )}
       </AnimatePresence>
     </div>
-    </AuthenticatedLayout>
   );
 }

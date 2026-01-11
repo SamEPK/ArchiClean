@@ -8,7 +8,6 @@ import { Card, CardContent, CardTitle } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
 import { Badge } from '@/components/atoms/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthenticatedLayout } from '@/components/layouts/AuthenticatedLayout';
 
 interface UserProfile {
   id: string;
@@ -189,7 +188,6 @@ export default function ProfilePage() {
   }
 
   return (
-    <AuthenticatedLayout>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
@@ -538,6 +536,5 @@ export default function ProfilePage() {
         )}
       </AnimatePresence>
     </div>
-    </AuthenticatedLayout>
   );
 }

@@ -2,7 +2,7 @@
 
 import DashboardNavbar from '@/components/DashboardNavbar';
 
-export default function DashboardLayout({
+export default function AccountsLayout({
   children,
 }: {
   children: React.ReactNode;

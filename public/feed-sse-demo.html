@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏦 Banque AVENIR - Feed & Notifications (SSE)</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --gold: #fbbf24;
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 { font-size: 1.5rem; }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.connected { background: #22c55e; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-body { padding: 20px; }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+        
+        .badge-news { background: #dbeafe; color: #1d4ed8; }
+        .badge-promotion { background: #dcfce7; color: #16a34a; }
+        .badge-alert { background: #fee2e2; color: #dc2626; }
+        .badge-info { background: #f1f5f9; color: #475569; }
+        .badge-director { background: #fef3c7; color: #d97706; }
+        .badge-unread { background: #ef4444; color: white; }
+        
+        .feed-list { max-height: 500px; overflow-y: auto; }
+        
+        .article-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        
+        .article-item:last-child { border-bottom: none; }
+        .article-item:hover { background: #f8fafc; }
+        
+        .article-item.new {
+            animation: highlight 2s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background: #dbeafe; }
+            100% { background: transparent; }
+        }
+        
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .article-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        
+        .article-content {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        .article-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f8fafc;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .notification-item.unread {
+            background: #eff6ff;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .notification-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        
+        .notification-content { flex: 1; }
+        .notification-title { font-weight: 500; font-size: 0.875rem; }
+        .notification-message { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .notification-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+        
+        /* Admin Panel */
+        .admin-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .admin-panel h3 {
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea.form-control {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        select.form-control {
+            cursor: pointer;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text);
+        }
+        
+        .btn-secondary:hover { background: #cbd5e1; }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+        
+        .log-container {
+            background: #1e293b;
+            color: #a5f3fc;
+            font-family: monospace;
+            font-size: 0.75rem;
+            padding: 12px;
+            border-radius: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+        
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.error { color: #fca5a5; }
+        .log-entry.success { color: #86efac; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏦 Banque AVENIR - Feed & Notifications</h1>
+            <div class="status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Déconnecté</span>
+            </div>
+        </header>
+        
+        <div class="grid">
+            <!-- Main Feed -->
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" data-tab="articles" onclick="switchTab('articles')">
+                        📰 Actualités <span class="badge badge-news" id="articlesCount">0</span>
+                    </button>
+                    <button class="tab" data-tab="notifications" onclick="switchTab('notifications')">
+                        🔔 Notifications <span class="badge badge-unread" id="notifBadge" style="display:none">0</span>
+                    </button>
+                </div>
+                
+                <div id="articlesTab" class="feed-list">
+                    <div class="empty-state" id="articlesEmpty">
+                        <div class="icon">📭</div>
+                        <p>Aucune actualité</p>
+                        <p style="font-size:0.875rem">Les nouvelles actualités apparaîtront ici en temps réel via SSE</p>
+                    </div>
+                    <div id="articlesList"></div>
+                </div>
+                
+                <div id="notificationsTab" class="feed-list" style="display:none; padding:16px;">
+                    <div class="empty-state" id="notificationsEmpty">
+                        <div class="icon">🔕</div>
+                        <p>Aucune notification</p>
+                    </div>
+                    <div id="notificationsList"></div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div>
+                <!-- Connection Panel -->
+                <div class="card" style="margin-bottom:20px">
+                    <div class="card-header">⚡ Connexion SSE</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>ID Utilisateur (pour notifications personnalisées)</label>
+                            <input type="text" class="form-control" id="userIdInput" placeholder="ex: client-123" value="client-001">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="connectSSE()">Connecter</button>
+                            <button class="btn btn-secondary" onclick="disconnectSSE()">Déconnecter</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Panel - Créer Article -->
+                <div class="card">
+                    <div class="card-header">✍️ Créer une actualité (Conseiller/Directeur)</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Titre</label>
+                            <input type="text" class="form-control" id="articleTitle" placeholder="Titre de l'actualité">
+                        </div>
+                        <div class="form-group">
+                            <label>Contenu</label>
+                            <textarea class="form-control" id="articleContent" placeholder="Contenu de l'actualité..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Catégorie</label>
+                            <select class="form-control" id="articleCategory">
+                                <option value="news">📰 Actualité</option>
+                                <option value="promotion">🎉 Promotion</option>
+                                <option value="alert">⚠️ Alerte</option>
+                                <option value="info">ℹ️ Information</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rôle de l'auteur</label>
+                            <select class="form-control" id="authorRole">
+                                <option value="advisor">💼 Conseiller</option>
+                                <option value="director">👑 Directeur</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="createArticle()" style="width:100%">
+                            📤 Publier l'actualité
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Send Notification -->
+                <div class="card" style="margin-top:20px">
+                    <div class="card-header">📬 Envoyer une notification</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Destinataire (User ID)</label>
+                            <input type="text" class="form-control" id="notifRecipient" placeholder="ex: client-001" value="client-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Titre</label>
+                            <input type="text" class="form-control" id="notifTitle" placeholder="Titre de la notification">
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea class="form-control" id="notifMessage" placeholder="Message..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select class="form-control" id="notifType">
+                                <option value="info">ℹ️ Information</option>
+                                <option value="success">✅ Succès</option>
+                                <option value="warning">⚠️ Avertissement</option>
+                                <option value="alert">🚨 Alerte</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="sendNotification()" style="width:100%">
+                            📤 Envoyer la notification
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Event Log -->
+        <div class="admin-panel">
+            <h3>📋 Journal des événements SSE</h3>
+            <div class="log-container" id="eventLog">
+                <div class="log-entry">En attente de connexion...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let eventSource = null;
+        let articles = [];
+        let notifications = [];
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Connecté (SSE)';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Déconnecté';
+            }
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            
+            document.getElementById('articlesTab').style.display = tab === 'articles' ? 'block' : 'none';
+            document.getElementById('notificationsTab').style.display = tab === 'notifications' ? 'block' : 'none';
+        }
+        
+        function connectSSE() {
+            const userId = document.getElementById('userIdInput').value.trim();
+            
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            const endpoint = userId 
+                ? `${API_URL}/feed/stream/${userId}`
+                : `${API_URL}/feed/stream`;
+            
+            log(`Connexion à ${endpoint}...`);
+            
+            eventSource = new EventSource(endpoint);
+            
+            eventSource.onopen = () => {
+                log('✅ Connexion SSE établie', 'success');
+                updateStatus(true);
+            };
+            
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    log(`📨 Event reçu: ${data.eventType || data.type || 'message'}`, 'success');
+                    
+                    if (data.eventType === 'article' || data.type === 'article' || data.title && data.authorRole) {
+                        addArticle(data);
+                    } else if (data.eventType === 'notification' || data.type === 'notification') {
+                        addNotification(data);
+                    } else if (data.type === 'heartbeat') {
+                        log('💓 Heartbeat reçu');
+                    }
+                } catch (err) {
+                    console.error('Parse error:', err);
+                }
+            };
+            
+            eventSource.onerror = (err) => {
+                log('❌ Erreur SSE, reconnexion...', 'error');
+                updateStatus(false);
+            };
+        }
+        
+        function disconnectSSE() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                log('Déconnecté du flux SSE');
+                updateStatus(false);
+            }
+        }
+        
+        function addArticle(article) {
+            articles.unshift(article);
+            renderArticles();
+        }
+        
+        function addNotification(notif) {
+            notif.isRead = false;
+            notifications.unshift(notif);
+            renderNotifications();
+            updateNotifBadge();
+        }
+        
+        function renderArticles() {
+            const container = document.getElementById('articlesList');
+            const empty = document.getElementById('articlesEmpty');
+            const count = document.getElementById('articlesCount');
+            
+            count.textContent = articles.length;
+            
+            if (articles.length === 0) {
+                empty.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            container.innerHTML = articles.map((article, idx) => {
+                const badgeClass = `badge-${article.category || 'news'}`;
+                const isNew = idx === 0 && articles.length > 1 ? 'new' : '';
+                const categoryLabels = {
+                    news: '📰 Actualité',
+                    promotion: '🎉 Promotion',
+                    alert: '⚠️ Alerte',
+                    info: 'ℹ️ Info'
+                };
+                
+                return `
+                    <div class="article-item ${isNew}">
+                        <div class="article-header">
+                            <div>
+                                <span class="badge ${badgeClass}">${categoryLabels[article.category] || article.category}</span>
+                                ${article.authorRole === 'director' ? '<span class="badge badge-director">👑 Directeur</span>' : ''}
+                            </div>
+                            <span class="article-meta">${formatDate(article.createdAt)}</span>
+                        </div>
+                        <div class="article-title">${escapeHtml(article.title)}</div>
+                        <div class="article-content">${escapeHtml(article.content)}</div>
+                        <div class="article-meta">Par ${escapeHtml(article.authorName || 'Anonyme')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            const empty = document.getElementById('notificationsEmpty');
+            
+            if (notifications.length === 0) {
+                empty.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                warning: '⚠️',
+                alert: '🚨',
+                message: '💬'
+            };
+            
+            container.innerHTML = notifications.map((notif, idx) => `
+                <div class="notification-item ${notif.isRead ? '' : 'unread'}" onclick="markAsRead(${idx})">
+                    <div class="notification-icon">${icons[notif.type] || 'ℹ️'}</div>
+                    <div class="notification-content">
+                        <div class="notification-title">${escapeHtml(notif.title)}</div>
+                        <div class="notification-message">${escapeHtml(notif.message)}</div>
+                        <div class="notification-time">${formatDate(notif.createdAt)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function markAsRead(idx) {
+            notifications[idx].isRead = true;
+            renderNotifications();
+            updateNotifBadge();
+        }
+        
+        function updateNotifBadge() {
+            const unread = notifications.filter(n => !n.isRead).length;
+            const badge = document.getElementById('notifBadge');
+            
+            if (unread > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = unread;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        
+        async function createArticle() {
+            const title = document.getElementById('articleTitle').value.trim();
+            const content = document.getElementById('articleContent').value.trim();
+            const category = document.getElementById('articleCategory').value;
+            const authorRole = document.getElementById('authorRole').value;
+            
+            if (!title || !content) {
+                alert('Veuillez remplir le titre et le contenu');
+                return;
+            }
+            
+            try {
+                log(`📤 Création d'article: ${title}`);
+                
+                const response = await fetch(`${API_URL}/feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        content,
+                        category,
+                        authorId: authorRole === 'director' ? 'director-001' : 'advisor-001',
+                        authorName: authorRole === 'director' ? 'M. Dupont (Directeur)' : 'Mme Martin (Conseillère)',
+                        authorRole
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log('✅ Article créé et diffusé via SSE', 'success');
+                    document.getElementById('articleTitle').value = '';
+                    document.getElementById('articleContent').value = '';
+                } else {
+                    log(`❌ Erreur: ${data.message || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Erreur: ${err.message}`, 'error');
+            }
+        }
+        
+        async function sendNotification() {
+            const recipientId = document.getElementById('notifRecipient').value.trim();
+            const title = document.getElementById('notifTitle').value.trim();
+            const message = document.getElementById('notifMessage').value.trim();
+            const type = document.getElementById('notifType').value;
+            
+            if (!recipientId || !title || !message) {
+                alert('Veuillez remplir tous les champs');
+                return;
+            }
+            
+            try {
+                log(`📤 Envoi notification à ${recipientId}`);
+                
+                const response = await fetch(`${API_URL}/notifications`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipientId,
+                        title,
+                        message,
+                        type,
+                        senderId: 'advisor-001',
+                        senderName: 'Mme Martin (Conseillère)'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log('✅ Notification envoyée via SSE', 'success');
+                    document.getElementById('notifTitle').value = '';
+                    document.getElementById('notifMessage').value = '';
+                } else {
+                    log(`❌ Erreur: ${data.message || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Erreur: ${err.message}`, 'error');
+            }
+        }
+        
+        // Load existing articles on page load
+        async function loadExistingArticles() {
+            try {
+                const response = await fetch(`${API_URL}/feed`);
+                const data = await response.json();
+                if (data.success && data.articles) {
+                    articles = data.articles;
+                    renderArticles();
+                    log(`📥 ${articles.length} articles existants chargés`);
+                }
+            } catch (err) {
+                log('Impossible de charger les articles existants', 'error');
+            }
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        // Auto-connect on page load
+        window.onload = () => {
+            loadExistingArticles();
+            // Auto-connect after small delay
+            setTimeout(() => {
+                connectSSE();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

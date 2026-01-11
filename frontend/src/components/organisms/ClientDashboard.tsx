@@ -11,7 +11,7 @@ import { AccountsGrid } from '@/components/organisms/AccountsGrid';
 import { TransactionList } from '@/components/molecules/TransactionList';
 import { StocksList } from '@/components/organisms/StocksList';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import apiClient from '@/lib/api-client';
 import { RefreshCw, AlertCircle, ArrowRight, Plus, Send } from 'lucide-react';
 
@@ -69,10 +69,17 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ className }) => {
   const { user, isLoading: authLoading } = useAuth();
   const t = useTranslations('dashboard');
   const router = useRouter();
+  const locale = useLocale();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [stocksMap, setStocksMap] = useState<Record<string, { symbol: string; name: string; price: number }>>({});
+
+  // Helper function to navigate with locale
+  const navigateTo = (path: string) => {
+    router.push(`/${locale}${path}`);
+  };
 
   const fetchDashboardData = useCallback(async (showRefreshIndicator = false) => {
     if (!user?.id) {
@@ -91,7 +98,7 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ className }) => {
       console.log('[Dashboard] Fetching data for user:', user.id);
 
       // Fetch all data in parallel
-      const [accountsRes, transactionsRes, portfolioRes] = await Promise.all([
+      const [accountsRes, transactionsRes, portfolioRes, stocksRes] = await Promise.all([
         apiClient.getClientAccounts(user.id).catch((err) => {
           console.error('[Dashboard] Error fetching accounts:', err);
           return { success: false, accounts: [] };
@@ -102,9 +109,25 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ className }) => {
         }),
         apiClient.getClientPortfolio(user.id).catch((err) => {
           console.error('[Dashboard] Error fetching portfolio:', err);
-          return { success: false, holdings: [] };
+          return { success: false, items: [] };
+        }),
+        apiClient.getStocks().catch((err) => {
+          console.error('[Dashboard] Error fetching stocks:', err);
+          return [];
         }),
       ]);
+
+      // Build stocks map for quick lookup
+      const stocksMapData: Record<string, { symbol: string; name: string; price: number }> = {};
+      const stocksList = Array.isArray(stocksRes) ? stocksRes : [];
+      stocksList.forEach((stock: any) => {
+        stocksMapData[stock.id] = {
+          symbol: stock.symbol,
+          name: stock.name,
+          price: stock.price || 0,
+        };
+      });
+      setStocksMap(stocksMapData);
 
       console.log('[Dashboard] Accounts response:', accountsRes);
       console.log('[Dashboard] Transactions response:', transactionsRes);
@@ -115,8 +138,19 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ className }) => {
       // Process transactions
       const transactions = transactionsRes.success !== false ? (transactionsRes.transactions || []) : [];
 
-      // Process portfolio
-      const portfolio = portfolioRes.holdings || [];
+      // Process portfolio - using 'items' from API response
+      const portfolioItems = portfolioRes.items || [];
+      const portfolio = portfolioItems.map((item: any) => ({
+        stockId: item.stockId,
+        symbol: item.stockSymbol || stocksMapData[item.stockId]?.symbol || 'N/A',
+        name: item.stockName || stocksMapData[item.stockId]?.name || 'Action inconnue',
+        quantity: item.quantity || 0,
+        averagePrice: item.averagePurchasePrice || 0,
+        currentPrice: item.currentPrice || stocksMapData[item.stockId]?.price || item.averagePurchasePrice || 0,
+        totalValue: item.totalValue || (item.quantity * (item.currentPrice || item.averagePurchasePrice || 0)),
+        profitLoss: item.profit || 0,
+        profitLossPercent: item.averagePurchasePrice > 0 ? ((item.profit || 0) / (item.averagePurchasePrice * item.quantity)) * 100 : 0,
+      }));
 
       // Calculate stats
       const totalBalance = accounts.reduce((sum: number, acc: Account) => sum + (acc.balance || 0), 0);
@@ -382,7 +416,7 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ className }) => {
                     id: t.id,
                     type: t.type,
                     amount: t.amount,
-                    description: t.description || getTransactionDescription(t),
+                    description: formatTransactionDescription(t.description, stocksMap) || getTransactionDescription(t),
                     date: t.createdAt,
                     status: (t.status === 'completed' || t.status === 'pending' || t.status === 'failed' 
                       ? t.status 
@@ -451,4 +485,56 @@ function getTransactionDescription(t: Transaction): string {
     default:
       return 'Transaction';
   }
+}
+
+// Helper function to format transaction description with stock names
+function formatTransactionDescription(
+  description: string | undefined, 
+  stocksMap: Record<string, { symbol: string; name: string; price: number }>
+): string | undefined {
+  if (!description) return undefined;
+  
+  // Check if description contains "stock" or "Order" to handle stock-related transactions
+  if (description.toLowerCase().includes('stock') || description.toLowerCase().includes('order')) {
+    // Try to extract stock ID from description and replace with stock name
+    const uuidPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi;
+    const matches = description.match(uuidPattern);
+    
+    if (matches) {
+      let formattedDescription = description;
+      matches.forEach(stockId => {
+        const stock = stocksMap[stockId];
+        if (stock) {
+          formattedDescription = formattedDescription.replace(
+            new RegExp(stockId, 'gi'),
+            `${stock.symbol} (${stock.name})`
+          );
+        }
+      });
+      
+      // Clean up the description
+      if (formattedDescription.toLowerCase().includes('order buy reservation')) {
+        const stockMatch = Object.values(stocksMap).find(s => 
+          formattedDescription.includes(s.symbol) || formattedDescription.includes(s.name)
+        );
+        if (stockMatch) {
+          return `Achat ${stockMatch.symbol}`;
+        }
+        return 'Achat action';
+      }
+      if (formattedDescription.toLowerCase().includes('order sell reservation')) {
+        const stockMatch = Object.values(stocksMap).find(s => 
+          formattedDescription.includes(s.symbol) || formattedDescription.includes(s.name)
+        );
+        if (stockMatch) {
+          return `Vente ${stockMatch.symbol}`;
+        }
+        return 'Vente action';
+      }
+      
+      return formattedDescription;
+    }
+  }
+  
+  return description;
 }

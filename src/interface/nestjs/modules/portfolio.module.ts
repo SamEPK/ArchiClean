@@ -1,20 +1,23 @@
 import { Module } from '@nestjs/common';
 import { PortfolioController } from '../controllers/portfolio.controller';
 import { GetPortfolioUseCase } from '@application/use-cases/GetPortfolioUseCase';
-import { InMemoryPortfolioRepository } from '@infrastructure/repositories/in-memory/InMemoryPortfolioRepository';
-import { InMemoryStockRepository } from '@infrastructure/repositories/in-memory/InMemoryStockRepository';
+import {
+  RepositoriesModule,
+  PORTFOLIO_REPOSITORY,
+  STOCK_REPOSITORY,
+} from './repositories.module';
 
-const portfolioRepo = new InMemoryPortfolioRepository();
-const stockRepo = new InMemoryStockRepository();
-
-const getPortfolioUseCase = new GetPortfolioUseCase(portfolioRepo, stockRepo);
+console.log('[PortfolioModule] Using SINGLETON repositories from RepositoriesModule');
 
 @Module({
+  imports: [RepositoriesModule],
   controllers: [PortfolioController],
   providers: [
     {
       provide: 'GetPortfolioUseCase',
-      useValue: getPortfolioUseCase,
+      useFactory: (portfolioRepository, stockRepository) =>
+        new GetPortfolioUseCase(portfolioRepository, stockRepository),
+      inject: [PORTFOLIO_REPOSITORY, STOCK_REPOSITORY],
     },
   ],
 })

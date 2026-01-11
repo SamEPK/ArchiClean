@@ -60,6 +60,7 @@
     "@nestjs/platform-express": "^11.1.8",
     "@nestjs/platform-fastify": "^11.1.8",
     "@nestjs/platform-socket.io": "^11.1.8",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^11.2.4",
     "@nestjs/websockets": "^11.1.8",
     "@types/multer": "^2.0.0",

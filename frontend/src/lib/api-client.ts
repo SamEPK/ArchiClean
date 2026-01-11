@@ -170,7 +170,7 @@ class ApiClient {
   }
 
   async getClientPortfolio(clientId: string): Promise<any> {
-    return this.get(`/portfolio/${clientId}`, { useCache: true });
+    return this.get(`/portfolio/${clientId}`, { useCache: false });
   }
 
   async getStocks(): Promise<any> {

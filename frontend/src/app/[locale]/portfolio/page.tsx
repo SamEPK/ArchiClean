@@ -66,11 +66,14 @@ export default function PortfolioPage() {
         setLoading(true);
         
         // Charger le portfolio, les actions disponibles et les comptes en parallèle
+        // Note: on utilise get() directement avec useCache: false pour éviter les données obsolètes
         const [portfolioData, stocksData, accountsData] = await Promise.all([
-          apiClient.getClientPortfolio(user.id).catch(() => null),
+          apiClient.get(`/portfolio/${user.id}`, { useCache: false }).catch(() => null),
           apiClient.getStocks().catch(() => []),
           apiClient.getClientAccounts(user.id).catch(() => ({ accounts: [] }))
         ]);
+        
+        console.log('[Portfolio Page] Raw portfolio data:', portfolioData);
         
         // Traiter les comptes
         const accountsList = accountsData?.accounts || [];
@@ -79,23 +82,28 @@ export default function PortfolioPage() {
           setSelectedAccountId(accountsList[0].id);
         }
         
-        // Traiter les données du portfolio
+        // Traiter les données du portfolio - L'API retourne 'items' pas 'stocks'
         if (portfolioData) {
-          const stocks = Array.isArray(portfolioData.stocks) ? portfolioData.stocks : [];
-          const processedStocks = stocks.map((s: any) => ({
-            id: s.id || s.stockId,
-            symbol: s.symbol || s.ticker,
-            name: s.name || s.companyName,
-            price: s.currentPrice || s.price || 0,
+          // L'API retourne { userId, items: [...], totalValue, totalProfit }
+          const items = Array.isArray(portfolioData.items) ? portfolioData.items : 
+                        Array.isArray(portfolioData.stocks) ? portfolioData.stocks : [];
+          
+          const processedStocks = items.map((s: any) => ({
+            id: s.stockId || s.id,
+            symbol: s.stockSymbol || s.symbol || s.ticker,
+            name: s.stockName || s.name || s.companyName,
+            price: s.currentPrice || s.averagePurchasePrice || s.price || 0,
             change: s.change || 0,
             changePercent: s.changePercent || 0,
             quantity: s.quantity || s.shares || 0,
           }));
           
+          console.log('[Portfolio Page] Processed stocks:', processedStocks);
+          
           setPortfolio({
             stocks: processedStocks,
             totalValue: portfolioData.totalValue || processedStocks.reduce((sum: number, s: any) => sum + (s.price * s.quantity), 0),
-            totalGain: portfolioData.totalGain || 0,
+            totalGain: portfolioData.totalProfit || portfolioData.totalGain || 0,
             totalGainPercent: portfolioData.totalGainPercent || 0,
           });
         } else {

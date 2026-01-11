@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/atoms/Button';
+import { AlertTriangle } from 'lucide-react';
 
 export default function Error({
   error,
@@ -18,8 +19,8 @@ export default function Error({
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
       <div className="text-center px-4">
-        <div className="mb-8 animate-pulse">
-          <span className="text-9xl">⚠️</span>
+        <div className="mb-8 animate-pulse flex justify-center">
+          <AlertTriangle size={80} className="text-red-500" />
         </div>
         <h1 className="text-6xl font-display font-bold text-gray-900 mb-4">
           500

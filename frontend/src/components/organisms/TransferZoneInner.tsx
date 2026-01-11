@@ -6,6 +6,16 @@ import { clsx } from 'clsx';
 import { Card, CardContent, CardTitle } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  X, 
+  Lightbulb, 
+  Check, 
+  Download, 
+  ArrowDown, 
+  ArrowRight,
+  Wallet,
+  Landmark
+} from 'lucide-react';
 
 interface Account {
   id: string;
@@ -121,9 +131,7 @@ const DropZone: React.FC<DropZoneProps> = ({ account, onDrop, onRemove, excludeA
           className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors z-10"
           title="Retirer ce compte"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X size={16} />
         </button>
       )}
       <div className="flex items-center justify-between h-full">
@@ -134,8 +142,8 @@ const DropZone: React.FC<DropZoneProps> = ({ account, onDrop, onRemove, excludeA
           {account ? (
             <>
               <p className="text-sm text-gray-500 font-mono mt-1">{account.accountNumber}</p>
-              <p className="text-xs text-primary-600 mt-2 font-medium">
-                ✓ {label}
+              <p className="text-xs text-primary-600 mt-2 font-medium flex items-center gap-1">
+                <Check size={12} /> {label}
               </p>
             </>
           ) : (
@@ -148,7 +156,9 @@ const DropZone: React.FC<DropZoneProps> = ({ account, onDrop, onRemove, excludeA
           {account ? (
             <p className="text-xl font-bold text-gray-900">{formatBalance(account.balance)}</p>
           ) : (
-            <div className="text-4xl text-gray-300">📥</div>
+            <div className="text-4xl text-gray-300">
+              <Download size={40} strokeWidth={1.5} />
+            </div>
           )}
         </div>
       </div>
@@ -209,7 +219,9 @@ export const TransferZoneInner: React.FC<TransferZoneInnerProps> = ({
       <Card>
         <CardContent className="p-4 bg-gradient-to-r from-primary-50 to-secondary-50">
           <div className="flex items-start space-x-3">
-            <div className="text-2xl">💡</div>
+            <div className="p-2 bg-white/50 rounded-lg">
+              <Lightbulb size={24} className="text-primary-600" />
+            </div>
             <div>
               <p className="font-semibold text-gray-900 mb-1">
                 Comment effectuer un transfert ?
@@ -219,8 +231,8 @@ export const TransferZoneInner: React.FC<TransferZoneInnerProps> = ({
                 <li>Glissez un autre compte vers la zone "Compte destinataire"</li>
                 <li>Entrez le montant et confirmez le transfert</li>
               </ol>
-              <p className="text-xs text-gray-600 mt-2 italic">
-                💡 Astuce : Cliquez sur le ✕ pour retirer un compte d'une zone
+              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1 italic">
+                <Lightbulb size={12} /> Astuce : Cliquez sur le <X size={10} className="inline mx-0.5 bg-red-500 text-white rounded-full p-0.5" /> pour retirer un compte
               </p>
             </div>
           </div>
@@ -230,8 +242,9 @@ export const TransferZoneInner: React.FC<TransferZoneInnerProps> = ({
       {/* Drop zones */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            1️⃣ Compte source
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <Wallet size={16} className="text-primary-600" />
+            1. Compte source
           </h3>
           <DropZone
             account={sourceAccount}
@@ -243,8 +256,9 @@ export const TransferZoneInner: React.FC<TransferZoneInnerProps> = ({
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            2️⃣ Compte destinataire
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <Landmark size={16} className="text-primary-600" />
+            2. Compte destinataire
           </h3>
           <DropZone
             account={targetAccount}
@@ -294,7 +308,9 @@ export const TransferZoneInner: React.FC<TransferZoneInnerProps> = ({
                   <p className="text-sm text-gray-500">{sourceAccount.accountNumber}</p>
                 </div>
 
-                <div className="text-center text-2xl">↓</div>
+                  <div className="text-center flex justify-center py-2">
+                    <ArrowDown className="text-gray-400" size={24} />
+                  </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-1">Vers</p>

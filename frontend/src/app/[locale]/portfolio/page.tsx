@@ -9,6 +9,14 @@ import { Button } from '@/components/atoms/Button';
 import { Badge } from '@/components/atoms/Badge';
 import { StocksList } from '@/components/organisms/StocksList';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Briefcase, 
+  BarChart2, 
+  ShoppingCart, 
+  Wallet 
+} from 'lucide-react';
 
 interface Stock {
   id: string;
@@ -339,7 +347,7 @@ export default function PortfolioPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">📈 Mon Portfolio</h1>
+              <h1 className="text-3xl font-bold flex items-center gap-2"><TrendingUp /> Mon Portfolio</h1>
               <p className="text-purple-100 mt-1">Gérez vos investissements</p>
             </div>
             <div className="text-right">
@@ -347,7 +355,7 @@ export default function PortfolioPage() {
               <p className="text-3xl font-bold">{formatCurrency(portfolio?.totalValue || 0)}</p>
               {portfolio && portfolio.totalGain !== 0 && (
                 <div className={`flex items-center justify-end gap-1 ${portfolio.totalGain >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                  <span>{portfolio.totalGain >= 0 ? '▲' : '▼'}</span>
+                  <span>{portfolio.totalGain >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}</span>
                   <span>{formatCurrency(Math.abs(portfolio.totalGain))}</span>
                   <span>({portfolio.totalGainPercent.toFixed(2)}%)</span>
                 </div>
@@ -359,23 +367,23 @@ export default function PortfolioPage() {
           <div className="flex gap-4 mt-6">
             <button
               onClick={() => setActiveTab('portfolio')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                 activeTab === 'portfolio' 
                   ? 'bg-white text-purple-600' 
                   : 'bg-purple-700 text-white hover:bg-purple-600'
               }`}
             >
-              💼 Mon Portfolio
+              <Briefcase size={18} /> Mon Portfolio
             </button>
             <button
               onClick={() => setActiveTab('market')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                 activeTab === 'market' 
                   ? 'bg-white text-purple-600' 
                   : 'bg-purple-700 text-white hover:bg-purple-600'
               }`}
             >
-              📊 Marché
+              <BarChart2 size={18} /> Marché
             </button>
           </div>
         </div>
@@ -416,7 +424,7 @@ export default function PortfolioPage() {
             {!portfolio || portfolio.stocks.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
-                  <div className="text-6xl mb-4">📊</div>
+                  <div className="flex justify-center mb-4 text-gray-400"><BarChart2 size={64} /></div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">
                     Aucun investissement
                   </h3>
@@ -479,7 +487,7 @@ export default function PortfolioPage() {
               className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <CardTitle className="mb-6">🛒 Acheter {selectedStock.symbol}</CardTitle>
+              <CardTitle className="mb-6 flex items-center gap-2"><ShoppingCart /> Acheter {selectedStock.symbol}</CardTitle>
               
               <div className="p-4 bg-gray-50 rounded-lg mb-4">
                 <div className="flex items-center gap-3">
@@ -585,7 +593,7 @@ export default function PortfolioPage() {
               className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <CardTitle className="mb-6">💰 Vendre {selectedStock.symbol}</CardTitle>
+              <CardTitle className="mb-6 flex items-center gap-2"><Wallet /> Vendre {selectedStock.symbol}</CardTitle>
               
               <div className="p-4 bg-gray-50 rounded-lg mb-4">
                 <div className="flex items-center gap-3">

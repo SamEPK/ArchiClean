@@ -4,6 +4,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { Badge } from '@/components/atoms/Badge';
+import { ArrowDownLeft, ArrowUpRight, ArrowRight } from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -29,11 +30,11 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const getTypeIcon = (type: Transaction['type']) => {
     switch (type) {
       case 'deposit':
-        return '↓';
+        return <ArrowDownLeft size={20} />;
       case 'withdraw':
-        return '↑';
+        return <ArrowUpRight size={20} />;
       case 'transfer':
-        return '→';
+        return <ArrowRight size={20} />;
     }
   };
 

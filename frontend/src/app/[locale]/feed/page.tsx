@@ -1,6 +1,21 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { 
+  Newspaper, 
+  Zap, 
+  AlertTriangle, 
+  Info, 
+  MessageCircle, 
+  Siren, 
+  CheckCircle, 
+  Wifi, 
+  WifiOff, 
+  Bell, 
+  Crown, 
+  Inbox,
+  BellOff
+} from 'lucide-react';
 
 // Types
 interface Article {
@@ -204,40 +219,40 @@ export default function FeedPage() {
   const allArticles = [...articles, ...initialArticles];
 
   const getCategoryBadge = (category: string) => {
-    const badges: Record<string, { bg: string; text: string; label: string }> = {
-      news: { bg: 'bg-blue-100', text: 'text-blue-800', label: '📰 Actualité' },
-      promotion: { bg: 'bg-green-100', text: 'text-green-800', label: '🎉 Promotion' },
-      alert: { bg: 'bg-red-100', text: 'text-red-800', label: '⚠️ Alerte' },
-      info: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'ℹ️ Info' },
+    const badges: Record<string, { bg: string; text: string; label: React.ReactNode }> = {
+      news: { bg: 'bg-blue-100', text: 'text-blue-800', label: <span className="flex items-center gap-1"><Newspaper size={14} /> Actualité</span> },
+      promotion: { bg: 'bg-green-100', text: 'text-green-800', label: <span className="flex items-center gap-1"><Zap size={14} /> Promotion</span> },
+      alert: { bg: 'bg-red-100', text: 'text-red-800', label: <span className="flex items-center gap-1"><AlertTriangle size={14} /> Alerte</span> },
+      info: { bg: 'bg-gray-100', text: 'text-gray-800', label: <span className="flex items-center gap-1"><Info size={14} /> Info</span> },
     };
     return badges[category] || badges.info;
   };
 
   const getNotificationIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      message: '💬',
-      alert: '🚨',
-      info: 'ℹ️',
-      success: '✅',
-      warning: '⚠️',
+    const icons: Record<string, React.ReactNode> = {
+      message: <MessageCircle size={20} className="text-blue-500" />,
+      alert: <Siren size={20} className="text-red-500" />,
+      info: <Info size={20} className="text-gray-500" />,
+      success: <CheckCircle size={20} className="text-green-500" />,
+      warning: <AlertTriangle size={20} className="text-orange-500" />,
     };
-    return icons[type] || 'ℹ️';
+    return icons[type] || <Info size={20} className="text-gray-500" />;
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          📰 Feed & Notifications
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Newspaper /> Feed & Notifications
         </h1>
         <div className="flex items-center gap-3">
-          <span className={`px-3 py-1 rounded-full text-sm ${
+          <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
             isConnected 
               ? 'bg-green-100 text-green-800' 
               : 'bg-red-100 text-red-800'
           }`}>
-            {isConnected ? '🟢 Connecté (SSE)' : '🔴 Déconnecté'}
+            {isConnected ? <><Wifi size={14} /> Connecté (SSE)</> : <><WifiOff size={14} /> Déconnecté</>}
           </span>
           {unreadCount > 0 && (
             <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs">
@@ -257,23 +272,23 @@ export default function FeedPage() {
       <div className="flex border-b mb-6">
         <button
           onClick={() => setActiveTab('articles')}
-          className={`px-4 py-2 font-medium ${
+          className={`px-4 py-2 font-medium flex items-center gap-2 ${
             activeTab === 'articles'
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          📰 Actualités ({allArticles.length})
+          <Newspaper size={18} /> Actualités ({allArticles.length})
         </button>
         <button
           onClick={() => setActiveTab('notifications')}
-          className={`px-4 py-2 font-medium relative ${
+          className={`px-4 py-2 font-medium relative flex items-center gap-2 ${
             activeTab === 'notifications'
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          🔔 Notifications ({notifications.length})
+          <Bell size={18} /> Notifications ({notifications.length})
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {unreadCount}
@@ -286,8 +301,8 @@ export default function FeedPage() {
       {activeTab === 'articles' ? (
         <div className="space-y-4">
           {allArticles.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-5xl mb-4">📭</p>
+            <div className="text-center py-12 text-gray-500 flex flex-col items-center">
+              <Inbox size={48} className="mb-4 text-gray-400" />
               <p>Aucune actualité pour le moment</p>
               <p className="text-sm">Les nouvelles actualités apparaîtront ici en temps réel</p>
             </div>
@@ -302,8 +317,8 @@ export default function FeedPage() {
                         {badge.label}
                       </span>
                       {article.authorRole === 'director' && (
-                        <span className="ml-2 inline-block px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">
-                          👑 Directeur
+                        <span className="ml-2 inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">
+                          <Crown size={12} /> Directeur
                         </span>
                       )}
                     </div>
@@ -333,8 +348,8 @@ export default function FeedPage() {
       ) : (
         <div className="space-y-3">
           {notifications.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-5xl mb-4">🔕</p>
+            <div className="text-center py-12 text-gray-500 flex flex-col items-center">
+              <BellOff size={48} className="mb-4 text-gray-400" />
               <p>Aucune notification</p>
             </div>
           ) : (
@@ -349,7 +364,7 @@ export default function FeedPage() {
                 onClick={() => !notif.isRead && markNotificationAsRead(notif.id)}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">{getNotificationIcon(notif.type)}</span>
+                  <span className="mt-1">{getNotificationIcon(notif.type)}</span>
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900 dark:text-white">
                       {notif.title}

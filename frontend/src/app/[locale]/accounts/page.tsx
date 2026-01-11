@@ -9,6 +9,14 @@ import { TransferZone } from '@/components/organisms/TransferZone';
 import { Card, CardContent, CardTitle } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ArrowRightLeft, 
+  ArrowDown, 
+  ArrowUp, 
+  Landmark, 
+  Plus, 
+  CreditCard 
+} from 'lucide-react';
 
 interface Account {
   id: string;
@@ -259,13 +267,13 @@ export default function AccountsPage() {
             </button>
             <button
               onClick={() => setActiveTab('transfer')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                 activeTab === 'transfer' 
                   ? 'bg-white text-primary-600' 
                   : 'bg-primary-700 text-white hover:bg-primary-600'
               }`}
             >
-              💸 Virements
+              <ArrowRightLeft size={16} /> Virements
             </button>
           </div>
         </div>
@@ -281,24 +289,24 @@ export default function AccountsPage() {
 
         {/* Actions rapides */}
         <div className="flex gap-4 mb-8">
-          <Button onClick={() => setShowCreateModal(true)} variant="primary">
-            ➕ Nouveau compte
+          <Button onClick={() => setShowCreateModal(true)} variant="primary" className="flex items-center gap-2">
+            <Plus size={16} /> Nouveau compte
           </Button>
           <Button onClick={() => {
             if (accounts.length > 0) {
               setSelectedAccount(accounts[0]);
               setShowDepositModal(true);
             }
-          }} variant="outline">
-            💰 Déposer
+          }} variant="outline" className="flex items-center gap-2">
+            <ArrowDown size={16} /> Déposer
           </Button>
           <Button onClick={() => {
             if (accounts.length > 0) {
               setSelectedAccount(accounts[0]);
               setShowWithdrawModal(true);
             }
-          }} variant="outline">
-            💳 Retirer
+          }} variant="outline" className="flex items-center gap-2">
+            <ArrowUp size={16} /> Retirer
           </Button>
         </div>
 
@@ -307,7 +315,7 @@ export default function AccountsPage() {
             {accounts.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
-                  <div className="text-6xl mb-4">🏦</div>
+                  <div className="flex justify-center mb-4 text-gray-400"><Landmark size={64} /></div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">
                     Aucun compte bancaire
                   </h3>
@@ -443,7 +451,7 @@ export default function AccountsPage() {
               className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <CardTitle className="mb-6">💰 Effectuer un dépôt</CardTitle>
+              <CardTitle className="mb-6 flex items-center gap-2"><ArrowDown /> Effectuer un dépôt</CardTitle>
               
               <div className="p-4 bg-gray-50 rounded-lg mb-4">
                 <p className="text-sm text-gray-600">Compte sélectionné</p>
@@ -552,7 +560,7 @@ export default function AccountsPage() {
               className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <CardTitle className="mb-6">💳 Effectuer un retrait</CardTitle>
+              <CardTitle className="mb-6 flex items-center gap-2"><ArrowUp /> Effectuer un retrait</CardTitle>
               
               <div className="p-4 bg-gray-50 rounded-lg mb-4">
                 <p className="text-sm text-gray-600">Compte sélectionné</p>

@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { Card, CardContent, CardTitle } from '@/components/atoms/Card';
 import { Badge } from '@/components/atoms/Badge';
 import { motion } from 'framer-motion';
+import { CreditCard, Landmark, TrendingUp } from 'lucide-react';
 
 interface Account {
   id: string;
@@ -44,11 +45,11 @@ export const AccountsGrid: React.FC<AccountsGridProps> = ({
   const getTypeIcon = (type: Account['type']) => {
     switch (type) {
       case 'checking':
-        return '💳';
+        return <CreditCard className="w-6 h-6 text-white" />;
       case 'savings':
-        return '🏦';
+        return <Landmark className="w-6 h-6 text-white" />;
       case 'investment':
-        return '📈';
+        return <TrendingUp className="w-6 h-6 text-white" />;
     }
   };
 

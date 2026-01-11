@@ -33,7 +33,7 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
       <nav className="bg-primary-900 text-white shadow-md z-50">
         <div className="container-bank mx-auto flex justify-between items-center h-16 px-4">
           {/* Logo */}
-          <Link href={`/${locale}/dashboard/client`} className="flex items-center gap-2 group">
+          <Link href={user?.role === 'ADVISOR' ? `/${locale}/dashboard/advisor` : user?.role === 'DIRECTOR' ? `/${locale}/dashboard/director` : `/${locale}/dashboard/client`} className="flex items-center gap-2 group">
              <div className="bg-white/10 p-2 rounded group-hover:bg-white/20 transition-colors">
                 <Building2 size={24} className="text-white" />
              </div>
@@ -88,26 +88,45 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="container-bank mx-auto px-4">
            <div className="flex gap-1 overflow-x-auto">
-              <NavLink href={`/${locale}/dashboard/client`} active={pathname === `/${locale}/dashboard/client`}>
-                 <Briefcase size={18} />
-                 <span>Ma Synthèse</span>
-              </NavLink>
-              <NavLink href={`/${locale}/accounts`} active={pathname?.includes('/accounts')}>
-                 <PieChart size={18} />
-                 <span>Mes Comptes</span>
-              </NavLink>
-              <NavLink href={`/${locale}/portfolio`} active={pathname?.includes('/portfolio')}>
-                 <PieChart size={18} />
-                 <span>Portfolio</span>
-              </NavLink>
-              <NavLink href={`/${locale}/messages`} active={pathname?.includes('/messages')}>
-                 <MessageSquare size={18} />
-                 <span>Messages</span>
-              </NavLink>
-              <NavLink href={`/${locale}/feed`} active={pathname?.includes('/feed')}>
-                 <Newspaper size={18} />
-                 <span>Actualités</span>
-              </NavLink>
+              {(!user?.role || user?.role === 'CLIENT' || user?.role === 'USER') && (
+                <>
+                  <NavLink href={`/${locale}/dashboard/client`} active={pathname === `/${locale}/dashboard/client`}>
+                     <Briefcase size={18} />
+                     <span>Ma Synthèse</span>
+                  </NavLink>
+                  <NavLink href={`/${locale}/accounts`} active={pathname?.includes('/accounts')}>
+                     <PieChart size={18} />
+                     <span>Mes Comptes</span>
+                  </NavLink>
+                  <NavLink href={`/${locale}/portfolio`} active={pathname?.includes('/portfolio')}>
+                     <PieChart size={18} />
+                     <span>Portfolio</span>
+                  </NavLink>
+                  <NavLink href={`/${locale}/messages`} active={pathname?.includes('/messages')}>
+                     <MessageSquare size={18} />
+                     <span>Messages</span>
+                  </NavLink>
+                  <NavLink href={`/${locale}/feed`} active={pathname?.includes('/feed')}>
+                     <Newspaper size={18} />
+                     <span>Actualités</span>
+                  </NavLink>
+                </>
+              )}
+
+              {user?.role === 'ADVISOR' && (
+                <NavLink href={`/${locale}/dashboard/advisor`} active={pathname === `/${locale}/dashboard/advisor`}>
+                   <Briefcase size={18} />
+                   <span>Espace Conseiller</span>
+                </NavLink>
+              )}
+
+              {user?.role === 'DIRECTOR' && (
+                <NavLink href={`/${locale}/dashboard/director`} active={pathname === `/${locale}/dashboard/director`}>
+                   <Building2 size={18} />
+                   <span>Espace Directeur</span>
+                </NavLink>
+              )}
+
               <NavLink href={`/${locale}/profile`} active={pathname?.includes('/profile')}>
                  <Settings size={18} />
                  <span>Mon Profil</span>

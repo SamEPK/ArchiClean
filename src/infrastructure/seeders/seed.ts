@@ -1,7 +1,7 @@
 import { User, UserRole } from '../../domain/entities/User';
 import { Stock } from '../../domain/entities/Stock';
 import { HashService } from '../services/HashService';
-import { InMemoryUserRepository } from '../repositories/in-memory/InMemoryUserRepository';
+import { PersistentUserRepository } from '../repositories/persistent/PersistentUserRepository';
 import { InMemoryStockRepository } from '../repositories/in-memory/InMemoryStockRepository';
 import { uuidv4 } from '../utils/uuid-helper';
 
@@ -18,51 +18,62 @@ import { uuidv4 } from '../utils/uuid-helper';
  */
 
 const hashService = new HashService();
-const userRepository = new InMemoryUserRepository();
+// Utilisation du repository persistant pour que les utilisateurs soient sauvegardés dans ./data/users.json
+const userRepository = new PersistentUserRepository('./data');
 const stockRepository = new InMemoryStockRepository();
 
 async function seedUsers() {
   console.log('\n📝 Création des utilisateurs...\n');
 
   // 1. DIRECTEUR - Accès complet au système
-  const directorPassword = await hashService.hashPassword('DirecteurSecure123!');
-  const director = new User({
-    id: uuidv4(),
-    email: 'directeur@avenir.com',
-    password: directorPassword,
-    firstName: 'Jean',
-    lastName: 'Dupont',
-    phoneNumber: '+33612345678',
-    role: UserRole.DIRECTOR,
-    isPublic: false,
-    isEmailConfirmed: true, // Email déjà confirmé pour le seed
-    createdAt: new Date(),
-  });
-  await userRepository.create(director);
-  console.log('✅ Directeur créé:');
-  console.log('   Email: directeur@avenir.com');
-  console.log('   Mot de passe: DirecteurSecure123!');
-  console.log('   Rôle: DIRECTOR\n');
+  const directorEmail = 'directeur@avenir.com';
+  if (await userRepository.findByEmail(directorEmail)) {
+     console.log('⚠️ Le directeur existe déjà, passage...');
+  } else {
+    const directorPassword = await hashService.hashPassword('DirecteurSecure123!');
+    const director = new User({
+      id: uuidv4(),
+      email: directorEmail,
+      password: directorPassword,
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      phoneNumber: '+33612345678',
+      role: UserRole.DIRECTOR,
+      isPublic: false,
+      isEmailConfirmed: true, // Email déjà confirmé pour le seed
+      createdAt: new Date(),
+    });
+    await userRepository.create(director);
+    console.log('✅ Directeur créé:');
+    console.log(`   Email: ${directorEmail}`);
+    console.log('   Mot de passe: DirecteurSecure123!');
+    console.log('   Rôle: DIRECTOR\n');
+  }
 
   // 2. CONSEILLER
-  const advisorPassword = await hashService.hashPassword('ConseillerSecure123!');
-  const advisor = new User({
-    id: uuidv4(),
-    email: 'conseiller@avenir.com',
-    password: advisorPassword,
-    firstName: 'Marie',
-    lastName: 'Martin',
-    phoneNumber: '+33623456789',
-    role: UserRole.ADVISOR,
-    isPublic: false,
-    isEmailConfirmed: true,
-    createdAt: new Date(),
-  });
-  await userRepository.create(advisor);
-  console.log('✅ Conseiller créé:');
-  console.log('   Email: conseiller@avenir.com');
-  console.log('   Mot de passe: ConseillerSecure123!');
-  console.log('   Rôle: ADVISOR\n');
+  const advisorEmail = 'conseiller@avenir.com';
+  if (await userRepository.findByEmail(advisorEmail)) {
+     console.log('⚠️ Le conseiller existe déjà, passage...');
+  } else {
+    const advisorPassword = await hashService.hashPassword('ConseillerSecure123!');
+    const advisor = new User({
+      id: uuidv4(),
+      email: advisorEmail,
+      password: advisorPassword,
+      firstName: 'Marie',
+      lastName: 'Martin',
+      phoneNumber: '+33623456789',
+      role: UserRole.ADVISOR,
+      isPublic: false,
+      isEmailConfirmed: true,
+      createdAt: new Date(),
+    });
+    await userRepository.create(advisor);
+    console.log('✅ Conseiller créé:');
+    console.log(`   Email: ${advisorEmail}`);
+    console.log('   Mot de passe: ConseillerSecure123!');
+    console.log('   Rôle: ADVISOR\n');
+  }
 
   // 3. CLIENTS DE TEST
   const clients = [
@@ -89,6 +100,11 @@ async function seedUsers() {
   const clientPassword = await hashService.hashPassword('ClientTest123!');
 
   for (const clientData of clients) {
+    if (await userRepository.findByEmail(clientData.email)) {
+      console.log(`⚠️ Client ${clientData.email} existe déjà, passage...`);
+      continue;
+    }
+
     const client = new User({
       id: uuidv4(),
       email: clientData.email,
@@ -199,6 +215,11 @@ async function main() {
     console.log('⚠️  NOTE: Ces données sont stockées en MÉMOIRE (in-memory)');
     console.log('   Elles seront perdues au redémarrage du serveur.\n');
     console.log('🚀 Vous pouvez maintenant vous connecter avec ces comptes!\n');
+
+    // Force save to disk before exiting
+    console.log('💾 Sauvegarde sur le disque...');
+    userRepository.save();
+    console.log('✅ Sauvegarde terminée');
 
     process.exit(0);
   } catch (error) {

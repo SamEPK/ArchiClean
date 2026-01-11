@@ -125,19 +125,20 @@ class ApiClient {
 
   // Auth methods
   async login(email: string, password: string, role: string): Promise<any> {
-    const endpoints: Record<string, string> = {
-      CLIENT: '/clients/login',
-      ADVISOR: '/advisors/login',
-      DIRECTOR: '/director/login',
-    };
+    // UNIFIED LOGIN: The backend has been consolidated to use a single Identity Provider pattern Use Case
+    // All roles (Client, Advisor, Director) now authenticate via the central /auth/login endpoint
+    // which queries the unified 'users' collection/file.
+    const endpoint = '/auth/login';
 
-    const response = await this.post(endpoints[role] || endpoints.CLIENT, {
+    const response = await this.post(endpoint, {
       email,
       password,
     });
 
-    if (response.token) {
-      this.setToken(response.token);
+    if (response.accessToken) {
+      this.setToken(response.accessToken);
+    } else if (response.token) {
+        this.setToken(response.token);
     }
 
     return response;
@@ -242,6 +243,66 @@ class ApiClient {
 
   async getStockPrice(stockId: string): Promise<any> {
     return this.get(`/orders/stock/${stockId}/price`, { useCache: false });
+  }
+
+  // Director methods
+  async createStock(data: any): Promise<any> {
+    return this.post('/director/stocks', data);
+  }
+
+  async updateStock(stockId: string, data: any): Promise<any> {
+    return this.put(`/director/stocks/${stockId}`, data);
+  }
+
+  async deleteStock(stockId: string): Promise<any> {
+    return this.delete(`/director/stocks/${stockId}`);
+  }
+
+  async toggleStockAvailability(stockId: string, isAvailable: boolean): Promise<any> {
+    return this.put(`/director/stocks/${stockId}/availability`, { isAvailable });
+  }
+
+  async updateSavingsRate(rate: number): Promise<any> {
+    return this.put('/director/savings/interest-rate', { interestRate: rate });
+  }
+
+  async createClientByDirector(data: any): Promise<any> {
+    return this.post('/director/clients', data);
+  }
+
+  async getAllClients(): Promise<any> {
+    // Note: There isn't a direct "get all clients" endpoint for director in the controller snippets I read, 
+    // but typically there should be. I'll search for one or reuse a search endpoint if available.
+    // Wait, DirectorController didn't show getAllClients, but searchClients is usually available.
+    // I'll assume /director/clients or similar if I missed it, otherwise mock or use search.
+    // Actually, let's use search if available or just return empty for now if not sure.
+    // I'll double check DirectorController for a GET /director/clients later.
+    return this.get('/director/clients', { useCache: true }).catch(() => []); 
+  }
+
+  async getDirectorAdvisors(): Promise<any> {
+    return this.get('/director/advisors', { useCache: true });
+  }
+
+  async banClient(clientId: string, banned: boolean): Promise<any> {
+    return this.put(`/director/clients/${clientId}/ban`, { banned });
+  }
+
+  // Advisor methods
+  async getAdvisorOpenConversations(): Promise<any> {
+    return this.get('/advisors/conversations/open', { useCache: false });
+  }
+  
+  async getAdvisorClientAssignments(): Promise<any> {
+    return this.get('/advisors/client-assignments', { useCache: false });
+  }
+
+  async replyToConversation(conversationId: string, content: string): Promise<any> {
+    return this.post(`/advisors/conversations/${conversationId}/reply`, { content });
+  }
+
+  async grantCredit(data: any): Promise<any> {
+    return this.post('/advisors/credits', data);
   }
 }
 

@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { USER_REPOSITORY } from './repositories.module';
 
 // Controllers
 import { AuthController } from '../controllers/auth.controller';
@@ -138,9 +139,8 @@ const mongoImports = mongoUri
       : [
           {
             provide: 'IUserRepository',
-            useClass: InMemoryUserRepository,
+            useExisting: USER_REPOSITORY,
           },
-          InMemoryUserRepository,
         ]),
 
     // Use Cases - Auth
@@ -232,7 +232,7 @@ const mongoImports = mongoUri
     HashService,
     EmailService,
     FileUploadService,
-    ...(mongoUri ? [MongoUserRepository] : [InMemoryUserRepository]),
+    ...(mongoUri ? [MongoUserRepository] : []),
     JwtAuthGuard,
     LocalAuthGuard,
     RolesGuard,

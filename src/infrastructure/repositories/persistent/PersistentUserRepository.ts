@@ -55,38 +55,47 @@ export class PersistentUserRepository implements IUserRepository {
     }
   }
 
+  public save(): void {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = null;
+    }
+
+    try {
+      const usersArray = Array.from(this.users.values()).map(user => ({
+        id: user.id,
+        email: user.email,
+        password: user.password,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        isPublic: user.isPublic,
+        isEmailConfirmed: user.isEmailConfirmed,
+        emailConfirmationToken: user.emailConfirmationToken,
+        emailConfirmationTokenExpiry: user.emailConfirmationTokenExpiry?.toISOString(),
+        refreshToken: user.refreshToken,
+        lastLoginAt: user.lastLoginAt?.toISOString(),
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt?.toISOString(),
+      }));
+      
+      fs.writeFileSync(this.dataFile, JSON.stringify(usersArray, null, 2), 'utf8');
+      console.log(`[PersistentUserRepository] Force saved ${this.users.size} users to disk`);
+    } catch (error) {
+      console.error('[PersistentUserRepository] Error saving data:', error);
+    }
+  }
+
   private saveToDisk(): void {
     if (this.saveTimer) {
       clearTimeout(this.saveTimer);
     }
     
     this.saveTimer = setTimeout(() => {
-      try {
-        const usersArray = Array.from(this.users.values()).map(user => ({
-          id: user.id,
-          email: user.email,
-          password: user.password,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNumber: user.phoneNumber,
-          role: user.role,
-          avatar: user.avatar,
-          bio: user.bio,
-          isPublic: user.isPublic,
-          isEmailConfirmed: user.isEmailConfirmed,
-          emailConfirmationToken: user.emailConfirmationToken,
-          emailConfirmationTokenExpiry: user.emailConfirmationTokenExpiry?.toISOString(),
-          refreshToken: user.refreshToken,
-          lastLoginAt: user.lastLoginAt?.toISOString(),
-          createdAt: user.createdAt.toISOString(),
-          updatedAt: user.updatedAt?.toISOString(),
-        }));
-        
-        fs.writeFileSync(this.dataFile, JSON.stringify(usersArray, null, 2), 'utf8');
-        console.log(`[PersistentUserRepository] Saved ${this.users.size} users to disk`);
-      } catch (error) {
-        console.error('[PersistentUserRepository] Error saving data:', error);
-      }
+     this.save();
     }, 1000);
   }
 

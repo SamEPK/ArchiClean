@@ -54,12 +54,15 @@ export class LoginUserUseCase {
    * @throws {Error} Si l'email n'est pas confirmé
    */
   async execute(dto: LoginUserDTO): Promise<LoginUserResult> {
+    console.log(`[LoginUserUseCase] Attempting login for email: ${dto.email}`);
     // Trouver l'utilisateur
     const user = await this.userRepository.findByEmail(dto.email);
     
     if (!user) {
+      console.log(`[LoginUserUseCase] User not found for email: ${dto.email}`);
       throw new Error('Email ou mot de passe incorrect');
     }
+    console.log(`[LoginUserUseCase] User found: ${user.email} (Role: ${user.role})`);
 
     // Vérifier le mot de passe
     const isPasswordValid = await this.hashService.comparePassword(
@@ -68,8 +71,10 @@ export class LoginUserUseCase {
     );
 
     if (!isPasswordValid) {
+      console.log(`[LoginUserUseCase] Invalid password for user: ${dto.email}`);
       throw new Error('Email ou mot de passe incorrect');
     }
+    console.log(`[LoginUserUseCase] Password valid for user: ${dto.email}`);
 
     // Vérifier si l'email est confirmé
     if (!user.isEmailConfirmed) {

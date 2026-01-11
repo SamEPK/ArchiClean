@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { 
   Landmark, 
@@ -19,6 +20,7 @@ export default function HomeContent() {
   const t = useTranslations('home');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const pathname = usePathname();
 
   const features = [
     {
@@ -48,16 +50,25 @@ export default function HomeContent() {
       {/* Top Bar for Professional look */}
       <div className="bg-primary-800 text-white py-2 text-sm">
         <div className="container-bank flex justify-between items-center">
-          <span>Espace Particuliers</span>
+          <div className="flex items-center gap-4">
+             <span>{t('topBar')}</span>
+             
+             {/* Language Switcher */}
+             <div className="flex items-center gap-2 border-l pl-4 border-primary-700">
+                 <Link href={pathname.replace(`/${locale}`, '/fr') || '/fr'} className={`font-bold transition-colors ${locale === 'fr' ? 'text-white' : 'text-primary-300 hover:text-white'}`}>FR</Link>
+                 <span className="text-primary-600">|</span>
+                 <Link href={pathname.replace(`/${locale}`, '/en') || '/en'} className={`font-bold transition-colors ${locale === 'en' ? 'text-white' : 'text-primary-300 hover:text-white'}`}>EN</Link>
+             </div>
+          </div>
           <div className="space-x-4 flex items-center">
             <Link href={`/${locale}/register`} className="hover:text-primary-200 flex items-center gap-1">
-              <UserPlus size={14} /> Devenir client
+              <UserPlus size={14} /> {t('becomeClient')}
             </Link>
             <a href="#" className="hover:text-primary-200 flex items-center gap-1">
-              <Phone size={14} /> Contact et agences
+              <Phone size={14} /> {t('contact')}
             </a>
             <a href="#" className="hover:text-primary-200 flex items-center gap-1">
-               <HelpCircle size={14} /> Aide et urgence
+               <HelpCircle size={14} /> {t('help')}
             </a>
           </div>
         </div>
@@ -72,18 +83,18 @@ export default function HomeContent() {
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-bold font-display text-primary-900 mb-6 leading-tight"
             >
-              Constructeur d'avenir,<br/>
-              <span className="text-secondary-600">Partenaire de confiance.</span>
+              {t('heroTitle')}<br/>
+              <span className="text-secondary-600">{t('heroSubtitle')}</span>
             </motion.h1>
             <p className="text-xl text-gray-600 mb-8 max-w-lg">
-              La Banque AVENIR vous accompagne dans tous les moments de votre vie avec expertise et proximité.
+              {t('heroDescription')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
                <Link href={`/${locale}/register`} className="btn-bank-primary text-center">
-                 Ouvrir un compte
+                 {t('cta')}
                </Link>
                <Link href={`/${locale}/login`} className="btn-bank-secondary text-center">
-                 Accéder à mes comptes
+                 {t('ctaLogin')}
                </Link>
             </div>
             

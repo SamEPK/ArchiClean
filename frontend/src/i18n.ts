@@ -15,8 +15,15 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   let messages;
   try {
-    messages = (await import(`@/messages/${locale}.json`)).default;
-  } catch {
+    console.log(`[i18n] Loading messages for locale: ${locale}`);
+    // Using explicit imports prevents webpack dynamic import limitations
+    if (locale === 'en') {
+      messages = (await import('@/messages/en.json')).default;
+    } else {
+      messages = (await import('@/messages/fr.json')).default;
+    }
+  } catch (error) {
+    console.error(`[i18n] Error loading messages for locale ${locale}:`, error);
     // Fallback to French if locale file not found
     messages = (await import('@/messages/fr.json')).default;
   }

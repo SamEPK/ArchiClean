@@ -23,19 +23,31 @@
   "nav": {
     "home": "Home",
     "dashboard": "Dashboard",
-    "accounts": "Accounts",
+    "accounts": "My Accounts",
     "transactions": "Transactions",
     "stocks": "Stocks",
     "portfolio": "Portfolio",
     "credits": "Credits",
     "messages": "Messages",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "overview": "Overview",
+    "feed": "Feed",
+    "advisorSpace": "Advisor Space",
+    "directorSpace": "Director Space"
   },
   "home": {
     "title": "AVENIR Bank",
     "subtitle": "Your trusted financial partner",
+    "heroTitle": "Architect of the future,",
+    "heroSubtitle": "Trusted partner.",
+    "heroDescription": "AVENIR Bank supports you in all moments of your life with expertise and proximity.",
     "cta": "Open an account",
+    "ctaLogin": "Access my accounts",
+    "topBar": "Personal Banking",
+    "becomeClient": "Become a client",
+    "contact": "Contact & Agencies",
+    "help": "Help & Emergency",
     "features": {
       "banking": "Secure bank accounts",
       "investment": "Stock investment",
@@ -122,6 +134,112 @@
     "reply": "Reply",
     "subject": "Subject",
     "recipient": "Recipient"
+  },
+  "advisor": {
+    "tabs": {
+      "conversations": "Conversations",
+      "credits": "Grant Credit",
+      "clients": "My Clients"
+    },
+    "titles": {
+       "openDiscussions": "Open Discussions",
+       "activeConversation": "Active Conversation",
+       "creditSimulator": "Simulator & Granting",
+       "fastProcess": "Fast Process",
+       "myClients": "My Client Portfolio"
+    },
+    "messages": {
+       "noConversation": "No conversation",
+       "online": "Online",
+       "noSubject": "No subject",
+       "typeReply": "Type your reply...",
+       "selectConversation": "Select a conversation to view messages",
+       "fastProcessDescription": "Granting credit via this interface automatically generates the repayment plan and notifies the client.",
+       "clientsNotImplemented": "Client portfolio visualization is under development.",
+       "sent": "Reply sent",
+       "errorSend": "Error sending reply",
+       "creditGranted": "Credit granted successfully",
+       "errorCredit": "Error granting credit"
+    },
+    "forms": {
+       "clientId": "Client ID",
+       "amount": "Amount (€)",
+       "duration": "Duration (Months)",
+       "annualRate": "Annual Rate (%)",
+       "insuranceRate": "Insurance Rate (%)",
+       "submitCredit": "Validate Credit"
+    }
+  },
+  "director": {
+      "tabs": {
+        "stocks": "Stock Management",
+        "clients": "Client Management",
+        "assignments": "Client Assignments",
+        "savings": "Savings Rates",
+        "system": "System"
+      },
+      "titles": {
+        "createStock": "Create Stock",
+        "availableStocks": "Available Stocks",
+        "newClient": "New Client",
+        "clientList": "Client List",
+        "assignment": "Client - Advisor Assignment",
+        "savingsPolicy": "Savings Policy",
+        "systemStatus": "System Status",
+        "info": "Information"
+      },
+      "forms": {
+        "symbol": "Symbol (e.g. AAPL)",
+        "name": "Name",
+        "company": "Company",
+        "submitStock": "Add to Market",
+        "email": "Email",
+        "password": "Password",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "phone": "Phone",
+        "submitClient": "Create Client",
+        "dailyInterestRate": "Daily Interest Rate (%)",
+        "updateRate": "Update Global Rate",
+        "searchClient": "Client Name...",
+        "selectAdvisor": "Choose an advisor..."
+      },
+      "table": {
+        "symbol": "Symbol",
+        "name": "Name",
+        "status": "Status",
+        "actions": "Actions",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "empty": "No stocks available"
+      },
+      "messages": {
+         "clientListNotImplemented": "Full client list functionality is under implementation (requires specific API route).",
+         "assignmentManual": "This interface would allow manually linking an orphan client to an advisor. Currently, assignment is automatic upon first interaction or contact.",
+         "assignmentSearchHelper": "Use the search in the Assignments tab to find a specific client.",
+         "stockCreated": "Stock created successfully",
+         "stockError": "Error creating stock",
+         "stockUpdated": "Stock {status}",
+         "stockUpdateError": "Error during update",
+         "stockDeleted": "Stock deleted",
+         "stockDeleteError": "Delete error",
+         "confirmDelete": "Are you sure?",
+         "clientCreated": "Client created",
+         "clientError": "Error creating client",
+         "rateUpdated": "Rate updated",
+         "rateError": "Error updating rate",
+         "loadError": "Error loading data",
+         "rateImpact": "The current rate affects all savings accounts. The update is immediate for the calculation of the next daily interests."
+      },
+      "system": {
+          "backend": "Backend API",
+          "database": "Database (Users)",
+          "eventStore": "Event Store",
+          "thirdParty": "Third Party Services",
+          "version": "Version",
+          "deployment": "Last Deployment",
+          "env": "Environment"
+      }
   },
   "errors": {
     "400": "Bad request",

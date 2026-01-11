@@ -23,19 +23,31 @@
   "nav": {
     "home": "Accueil",
     "dashboard": "Tableau de bord",
-    "accounts": "Comptes",
+    "accounts": "Mes Comptes",
     "transactions": "Transactions",
     "stocks": "Actions",
     "portfolio": "Portfolio",
     "credits": "Crédits",
     "messages": "Messages",
-    "profile": "Profil",
-    "settings": "Paramètres"
+    "profile": "Mon Profil",
+    "settings": "Paramètres",
+    "overview": "Ma Synthèse",
+    "feed": "Actualités",
+    "advisorSpace": "Espace Conseiller",
+    "directorSpace": "Espace Directeur"
   },
   "home": {
     "title": "Banque AVENIR",
     "subtitle": "Votre partenaire financier de confiance",
+    "heroTitle": "Constructeur d'avenir,",
+    "heroSubtitle": "Partenaire de confiance.",
+    "heroDescription": "La Banque AVENIR vous accompagne dans tous les moments de votre vie avec expertise et proximité.",
     "cta": "Ouvrir un compte",
+    "ctaLogin": "Accéder à mes comptes",
+    "topBar": "Espace Particuliers",
+    "becomeClient": "Devenir client",
+    "contact": "Contact et agences",
+    "help": "Aide et urgence",
     "features": {
       "banking": "Comptes bancaires sécurisés",
       "investment": "Investissement en actions",
@@ -122,6 +134,112 @@
     "reply": "Répondre",
     "subject": "Sujet",
     "recipient": "Destinataire"
+  },
+  "advisor": {
+    "tabs": {
+      "conversations": "Conversations",
+      "credits": "Octroyer Crédit",
+      "clients": "Mes Clients"
+    },
+    "titles": {
+       "openDiscussions": "Discussions en cours",
+       "activeConversation": "Conversation active",
+       "creditSimulator": "Simulateur & Octroi",
+       "fastProcess": "Processus Rapide",
+       "myClients": "Mon Portefeuille Clients"
+    },
+    "messages": {
+       "noConversation": "Aucune conversation",
+       "online": "En ligne",
+       "noSubject": "Pas de sujet",
+       "typeReply": "Écrivez votre réponse...",
+       "selectConversation": "Sélectionnez une conversation pour afficher les messages",
+       "fastProcessDescription": "L'octroi de crédit via cette interface génère automatiquement le plan de remboursement et notifie le client.",
+       "clientsNotImplemented": "Visualisation du portefeuille client en cours de développement.",
+       "sent": "Réponse envoyée",
+       "errorSend": "Erreur lors de l'envoi",
+       "creditGranted": "Crédit accordé avec succès",
+       "errorCredit": "Erreur lors de l'octroi du crédit"
+    },
+    "forms": {
+       "clientId": "ID Client",
+       "amount": "Montant (€)",
+       "duration": "Durée (Mois)",
+       "annualRate": "Taux Annuel (%)",
+       "insuranceRate": "Taux Assurance (%)",
+       "submitCredit": "Valider le crédit"
+    }
+  },
+  "director": {
+      "tabs": {
+        "stocks": "Gestion Actions",
+        "clients": "Gestion Clients",
+        "assignments": "Affectation Clients",
+        "savings": "Taux Épargne",
+        "system": "Système"
+      },
+      "titles": {
+        "createStock": "Créer une action",
+        "availableStocks": "Actions disponibles",
+        "newClient": "Nouveau Client",
+        "clientList": "Liste des clients",
+        "assignment": "Affectation Client - Conseiller",
+        "savingsPolicy": "Politique d'Épargne",
+        "systemStatus": "État du système",
+        "info": "Informations"
+      },
+      "forms": {
+        "symbol": "Symbole (ex: AAPL)",
+        "name": "Nom",
+        "company": "Entreprise",
+        "submitStock": "Ajouter au marché",
+        "email": "Email",
+        "password": "Mot de passe",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "phone": "Téléphone",
+        "submitClient": "Créer le client",
+        "dailyInterestRate": "Taux d'intérêt quotidien (%)",
+        "updateRate": "Mettre à jour le taux global",
+        "searchClient": "Nom du client...",
+        "selectAdvisor": "Choisir un conseiller..."
+      },
+      "table": {
+        "symbol": "Symbole",
+        "name": "Nom",
+        "status": "État",
+        "actions": "Actions",
+        "available": "Disponible",
+        "unavailable": "Indisponible",
+        "empty": "Aucune action disponible"
+      },
+      "messages": {
+         "clientListNotImplemented": "Fonctionnalité de liste complète des clients en cours d'implémentation (nécessite une route API spécifique).",
+         "assignmentManual": "Cette interface permettrait de lier manuellement un client orphelin à un conseiller. Actuellement, l'affectation se fait automatiquement lors de la première interaction ou prise de contact.",
+         "assignmentSearchHelper": "Utilisez la recherche dans l'onglet Affectations pour trouver un client spécifique.",
+         "stockCreated": "Action créée avec succès",
+         "stockError": "Erreur lors de la création de l'action",
+         "stockUpdated": "Action {status}",
+         "stockUpdateError": "Erreur lors de la modification",
+         "stockDeleted": "Action supprimée",
+         "stockDeleteError": "Erreur suppression",
+         "confirmDelete": "Êtes-vous sûr ?",
+         "clientCreated": "Client créé",
+         "clientError": "Erreur création client",
+         "rateUpdated": "Taux mis à jour",
+         "rateError": "Erreur mise à jour taux",
+         "loadError": "Erreur lors du chargement des données",
+         "rateImpact": "Le taux actuel impacte tous les livrets d'épargne. La mise à jour est immédiate pour le calcul des prochains intérêts quotidiens."
+      },
+      "system": {
+          "backend": "API Backend",
+          "database": "Base de données (Users)",
+          "eventStore": "Event Store",
+          "thirdParty": "Services Tiers",
+          "version": "Version",
+          "deployment": "Dernier déploiement",
+          "env": "Environnement"
+      }
   },
   "errors": {
     "400": "Requête invalide",

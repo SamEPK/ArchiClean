@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslations } from 'next-intl';
 import apiClient from '@/lib/api-client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
@@ -14,6 +15,7 @@ type Tab = 'conversations' | 'credits' | 'clients';
 
 export function AdvisorDashboard() {
   const { user } = useAuth();
+  const t = useTranslations('advisor');
   const [activeTab, setActiveTab] = useState<Tab>('conversations');
   const [conversations, setConversations] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -62,9 +64,9 @@ export function AdvisorDashboard() {
       await apiClient.replyToConversation(selectedConversation, replyContent);
       setReplyContent('');
       loadMessages(selectedConversation); // Refresh
-      toast.success('Réponse envoyée');
+      toast.success(t('messages.sent'));
     } catch (error) {
-      toast.error('Erreur lors de l\'envoi');
+      toast.error(t('messages.errorSend'));
     }
   };
 
@@ -77,10 +79,10 @@ export function AdvisorDashboard() {
         insuranceRate: parseFloat(data.insuranceRate),
         durationMonths: parseInt(data.durationMonths)
       });
-      toast.success('Crédit accordé avec succès');
+      toast.success(t('messages.creditGranted'));
       resetCredit();
     } catch (error) {
-       toast.error('Erreur lors de l\'octroi du crédit');
+       toast.error(t('messages.errorCredit'));
     }
   };
 
@@ -88,9 +90,9 @@ export function AdvisorDashboard() {
     <div className="space-y-6">
        {/* Tabs */}
        <div className="flex gap-2 overflow-x-auto pb-2">
-        <TabButton id="conversations" label="Conversations" icon={<MessageSquare size={16}/>} active={activeTab} onClick={setActiveTab} />
-        <TabButton id="credits" label="Octroyer Crédit" icon={<CreditCard size={16}/>} active={activeTab} onClick={setActiveTab} />
-        <TabButton id="clients" label="Mes Clients" icon={<Users size={16}/>} active={activeTab} onClick={setActiveTab} />
+        <TabButton id="conversations" label={t('tabs.conversations')} icon={<MessageSquare size={16}/>} active={activeTab} onClick={setActiveTab} />
+        <TabButton id="credits" label={t('tabs.credits')} icon={<CreditCard size={16}/>} active={activeTab} onClick={setActiveTab} />
+        <TabButton id="clients" label={t('tabs.clients')} icon={<Users size={16}/>} active={activeTab} onClick={setActiveTab} />
       </div>
 
       {/* CONVERSATIONS TAB */}
@@ -98,10 +100,10 @@ export function AdvisorDashboard() {
         <div className="grid md:grid-cols-3 gap-6 h-[600px]">
           {/* List */}
           <Card className="md:col-span-1 flex flex-col h-full">
-            <CardHeader className="pb-3 border-b"><CardTitle className="text-sm">Discussions en cours</CardTitle></CardHeader>
+            <CardHeader className="pb-3 border-b"><CardTitle className="text-sm">{t('titles.openDiscussions')}</CardTitle></CardHeader>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                {conversations.length === 0 ? (
-                 <div className="text-center text-gray-400 text-sm py-8">Aucune conversation</div>
+                 <div className="text-center text-gray-400 text-sm py-8">{t('messages.noConversation')}</div>
                ) : (
                  conversations.map(conv => (
                    <button 
@@ -114,7 +116,7 @@ export function AdvisorDashboard() {
                    >
                      <div className="font-semibold text-gray-800">{conv.clientId}</div> 
                      {/* Note: clientId is displayed because we might not have client name populated in this simplistic view. Real app would lookup name */}
-                     <div className="text-xs text-gray-500 mt-1 truncate">{conv.subject || 'Pas de sujet'}</div>
+                     <div className="text-xs text-gray-500 mt-1 truncate">{conv.subject || t('messages.noSubject')}</div>
                    </button>
                  ))
                )}
@@ -127,8 +129,8 @@ export function AdvisorDashboard() {
               <>
                  <CardHeader className="py-3 border-b bg-gray-50/50">
                     <div className="flex justify-between items-center">
-                        <span className="font-semibold text-gray-700">Conversation active</span>
-                        <span className="text-xs text-green-600 flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full"></span> En ligne</span>
+                        <span className="font-semibold text-gray-700">{t('titles.activeConversation')}</span>
+                        <span className="text-xs text-green-600 flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full"></span> {t('messages.online')}</span>
                     </div>
                  </CardHeader>
                  
@@ -153,7 +155,7 @@ export function AdvisorDashboard() {
                          <input 
                            type="text" 
                            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                           placeholder="Écrivez votre réponse..."
+                           placeholder={t('messages.typeReply')}
                            value={replyContent}
                            onChange={e => setReplyContent(e.target.value)}
                            onKeyDown={e => e.key === 'Enter' && handleSendReply()}
@@ -167,7 +169,7 @@ export function AdvisorDashboard() {
             ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
                     <MessageSquare size={48} className="mb-4 opacity-20" />
-                    <p>Sélectionnez une conversation pour afficher les messages</p>
+                    <p>{t('messages.selectConversation')}</p>
                 </div>
             )}
           </Card>
@@ -178,19 +180,19 @@ export function AdvisorDashboard() {
       {activeTab === 'credits' && (
           <div className="grid md:grid-cols-2 gap-8">
               <Card>
-                  <CardHeader><CardTitle>Simulateur & Octroi</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>{t('titles.creditSimulator')}</CardTitle></CardHeader>
                   <CardContent>
                       <form onSubmit={handleCreditSubmit(onGrantCredit)} className="space-y-4">
-                          <FormField label="ID Client" name="clientId" register={registerCredit} required placeholder="UUID du client" />
+                          <FormField label={t('forms.clientId')} name="clientId" register={registerCredit} required placeholder="UUID" />
                           <div className="grid grid-cols-2 gap-4">
-                              <FormField label="Montant (€)" name="amount" type="number" register={registerCredit} required placeholder="25000" />
-                              <FormField label="Durée (Mois)" name="durationMonths" type="number" register={registerCredit} required placeholder="60" />
+                              <FormField label={t('forms.amount')} name="amount" type="number" register={registerCredit} required placeholder="25000" />
+                              <FormField label={t('forms.duration')} name="durationMonths" type="number" register={registerCredit} required placeholder="60" />
                           </div>
                           <div className="grid grid-cols-2 gap-4">
-                              <FormField label="Taux Annuel (%)" name="annualRate" type="number" step="0.01" register={registerCredit} required placeholder="3.5" />
-                              <FormField label="Taux Assurance (%)" name="insuranceRate" type="number" step="0.01" register={registerCredit} required placeholder="0.35" />
+                              <FormField label={t('forms.annualRate')} name="annualRate" type="number" step="0.01" register={registerCredit} required placeholder="3.5" />
+                              <FormField label={t('forms.insuranceRate')} name="insuranceRate" type="number" step="0.01" register={registerCredit} required placeholder="0.35" />
                           </div>
-                          <Button type="submit" fullWidth>Valider le crédit</Button>
+                          <Button type="submit" fullWidth>{t('forms.submitCredit')}</Button>
                       </form>
                   </CardContent>
               </Card>
@@ -198,9 +200,9 @@ export function AdvisorDashboard() {
               <Card className="bg-gradient-to-br from-primary-900 to-primary-800 text-white border-none">
                   <CardContent className="flex flex-col items-center justify-center h-full text-center p-8">
                       <Clock size={48} className="mb-4 text-primary-200" />
-                      <h3 className="text-xl font-bold mb-2">Processus Rapide</h3>
+                      <h3 className="text-xl font-bold mb-2">{t('titles.fastProcess')}</h3>
                       <p className="text-primary-100 text-sm">
-                          L'octroi de crédit via cette interface génère automatiquement le plan de remboursement et notifie le client.
+                          {t('messages.fastProcessDescription')}
                       </p>
                   </CardContent>
               </Card>
@@ -210,11 +212,11 @@ export function AdvisorDashboard() {
       {/* CLIENTS TAB */}
       {activeTab === 'clients' && (
           <Card>
-              <CardHeader><CardTitle>Mon Portefeuille Clients</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('titles.myClients')}</CardTitle></CardHeader>
               <CardContent>
                   <div className="text-center py-12 text-gray-500">
                       <Users size={48} className="mx-auto mb-4 opacity-20" />
-                      <p>Visualisation du portefeuille client en cours de développement.</p>
+                      <p>{t('messages.clientsNotImplemented')}</p>
                   </div>
               </CardContent>
           </Card>

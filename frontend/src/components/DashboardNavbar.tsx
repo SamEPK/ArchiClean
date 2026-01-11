@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { 
   Building2, 
   LogOut, 
@@ -21,6 +21,9 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
   const locale = useLocale();
+  const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
+  const tHome = useTranslations('home');
 
   const handleLogout = () => {
     logout();
@@ -38,12 +41,19 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
                 <Building2 size={24} className="text-white" />
              </div>
              <span className="font-display font-bold text-xl tracking-wide">
-                Banque AVENIR
+                {tHome('title')}
              </span>
           </Link>
 
           {/* User Menu & Actions */}
           <div className="flex items-center gap-6">
+            {/* Language Switcher */}
+            <div className="flex items-center gap-2 mr-2">
+                 <Link href={pathname.replace(`/${locale}`, '/fr')} className={`text-sm font-bold transition-colors ${locale === 'fr' ? 'text-white' : 'text-primary-300 hover:text-white'}`}>FR</Link>
+                 <span className="text-primary-600">|</span>
+                 <Link href={pathname.replace(`/${locale}`, '/en')} className={`text-sm font-bold transition-colors ${locale === 'en' ? 'text-white' : 'text-primary-300 hover:text-white'}`}>EN</Link>
+            </div>
+
             <Link 
               href={`/${locale}/feed`}
               className="relative p-2 hover:bg-white/10 rounded-full transition-colors group"
@@ -78,7 +88,7 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
               className="flex items-center gap-2 text-sm text-primary-200 hover:text-white transition-colors ml-4"
             >
                <LogOut size={18} />
-               <span className="hidden md:inline">Déconnexion</span>
+               <span className="hidden md:inline">{tCommon('logout')}</span>
             </button>
           </div>
         </div>
@@ -92,23 +102,23 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
                 <>
                   <NavLink href={`/${locale}/dashboard/client`} active={pathname === `/${locale}/dashboard/client`}>
                      <Briefcase size={18} />
-                     <span>Ma Synthèse</span>
+                     <span>{t('overview')}</span>
                   </NavLink>
                   <NavLink href={`/${locale}/accounts`} active={pathname?.includes('/accounts')}>
                      <PieChart size={18} />
-                     <span>Mes Comptes</span>
+                     <span>{t('accounts')}</span>
                   </NavLink>
                   <NavLink href={`/${locale}/portfolio`} active={pathname?.includes('/portfolio')}>
                      <PieChart size={18} />
-                     <span>Portfolio</span>
+                     <span>{t('portfolio')}</span>
                   </NavLink>
                   <NavLink href={`/${locale}/messages`} active={pathname?.includes('/messages')}>
                      <MessageSquare size={18} />
-                     <span>Messages</span>
+                     <span>{t('messages')}</span>
                   </NavLink>
                   <NavLink href={`/${locale}/feed`} active={pathname?.includes('/feed')}>
                      <Newspaper size={18} />
-                     <span>Actualités</span>
+                     <span>{t('feed')}</span>
                   </NavLink>
                 </>
               )}
@@ -116,20 +126,20 @@ export default function DashboardNavbar({ children }: { children: React.ReactNod
               {user?.role === 'ADVISOR' && (
                 <NavLink href={`/${locale}/dashboard/advisor`} active={pathname === `/${locale}/dashboard/advisor`}>
                    <Briefcase size={18} />
-                   <span>Espace Conseiller</span>
+                   <span>{t('advisorSpace')}</span>
                 </NavLink>
               )}
 
               {user?.role === 'DIRECTOR' && (
                 <NavLink href={`/${locale}/dashboard/director`} active={pathname === `/${locale}/dashboard/director`}>
                    <Building2 size={18} />
-                   <span>Espace Directeur</span>
+                   <span>{t('directorSpace')}</span>
                 </NavLink>
               )}
 
               <NavLink href={`/${locale}/profile`} active={pathname?.includes('/profile')}>
                  <Settings size={18} />
-                 <span>Mon Profil</span>
+                 <span>{t('profile')}</span>
               </NavLink>
            </div>
         </div>

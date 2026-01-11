@@ -7,7 +7,7 @@
     "dev:fastify": "ts-node -r tsconfig-paths/register src/interface/fastify/server.ts",
     "dev:nestjs": "ts-node -r tsconfig-paths/register src/interface/nestjs/main.ts",
     "dev": "npm run dev:nestjs",
-    "start": "node dist/interface/nestjs/main.js",
+    "start": "node -r tsconfig-paths/register dist/interface/nestjs/main.js",
     "build": "tsc",
     "test": "jest --coverage",
     "test:watch": "jest --watch",

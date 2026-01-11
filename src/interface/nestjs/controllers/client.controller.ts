@@ -8,12 +8,14 @@ import { CreateBankAccountUseCase } from '@application/use-cases/CreateBankAccou
 import { DeleteBankAccountUseCase } from '@application/use-cases/DeleteBankAccountUseCase';
 import { UpdateBankAccountNameUseCase } from '@application/use-cases/UpdateBankAccountNameUseCase';
 import { ListBankAccountsUseCase } from '@application/use-cases/ListBankAccountsUseCase';
+import { UpdateClientProfileUseCase } from '@application/use-cases/UpdateClientProfileUseCase';
 import { IClientRepository } from '@domain/repositories/IClientRepository';
 import { RegisterClientDto } from '../dto/client/register-client.dto';
 import { ClientLoginDto } from '../dto/client/client-login.dto';
 import { ConfirmClientEmailDto } from '../dto/client/confirm-client-email.dto';
 import { CreateBankAccountDto } from '../dto/client/create-bank-account.dto';
 import { UpdateBankAccountNameDto } from '../dto/client/update-bank-account-name.dto';
+import { UpdateClientProfileDto } from '../dto/client/update-client-profile.dto';
 import { ListBankAccountsQueryDto } from '../dto/client/list-bank-accounts-query.dto';
 
 @ApiTags('Clients')
@@ -27,6 +29,7 @@ export class ClientController {
     private deleteBankAccountUseCase: DeleteBankAccountUseCase,
     private updateBankAccountNameUseCase: UpdateBankAccountNameUseCase,
     private listBankAccountsUseCase: ListBankAccountsUseCase,
+    private updateClientProfileUseCase: UpdateClientProfileUseCase,
     private jwtService: JwtService,
     @Inject('IClientRepository') private clientRepository: IClientRepository
   ) {}
@@ -55,6 +58,56 @@ export class ClientController {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to list clients',
         clients: [],
+      };
+    }
+  }
+
+  @Put(':clientId')
+  @ApiOperation({ summary: 'Mettre à jour le profil client', description: 'Modifier les informations personnelles du client' })
+  @ApiResponse({ status: 200, description: 'Profil mis à jour avec succès' })
+  @ApiResponse({ status: 404, description: 'Client introuvable' })
+  @ApiParam({ name: 'clientId', description: 'ID du client' })
+  @ApiBody({
+    description: 'Informations à mettre à jour',
+    schema: {
+      type: 'object',
+      properties: {
+        firstName: { type: 'string', example: 'Jean' },
+        lastName: { type: 'string', example: 'Dupont' },
+        phone: { type: 'string', example: '+33612345678' },
+        address: { type: 'string', example: '123 rue de la Paix' },
+        city: { type: 'string', example: 'Paris' },
+        postalCode: { type: 'string', example: '75001' },
+        country: { type: 'string', example: 'France' },
+      },
+    },
+  })
+  async updateProfile(
+    @Param('clientId') clientId: string,
+    @Body() body: UpdateClientProfileDto
+  ) {
+    try {
+      const client = await this.updateClientProfileUseCase.execute(clientId, body);
+
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        client: {
+          id: client.id,
+          email: client.email,
+          firstName: client.firstName,
+          lastName: client.lastName,
+          phoneNumber: client.phoneNumber,
+          address: (client as any).address,
+          city: (client as any).city,
+          postalCode: (client as any).postalCode,
+          country: (client as any).country,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update profile',
       };
     }
   }

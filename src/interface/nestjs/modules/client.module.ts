@@ -8,6 +8,7 @@ import { CreateBankAccountUseCase } from '../../../application/use-cases/CreateB
 import { DeleteBankAccountUseCase } from '../../../application/use-cases/DeleteBankAccountUseCase';
 import { UpdateBankAccountNameUseCase } from '../../../application/use-cases/UpdateBankAccountNameUseCase';
 import { ListBankAccountsUseCase } from '../../../application/use-cases/ListBankAccountsUseCase';
+import { UpdateClientProfileUseCase } from '../../../application/use-cases/UpdateClientProfileUseCase';
 import { 
   RepositoriesModule, 
   CLIENT_REPOSITORY, 
@@ -72,6 +73,11 @@ import {
       provide: ListBankAccountsUseCase,
       useFactory: (bankAccountRepository) => new ListBankAccountsUseCase(bankAccountRepository),
       inject: [BANK_ACCOUNT_REPOSITORY],
+    },
+    {
+      provide: UpdateClientProfileUseCase,
+      useFactory: (clientRepository) => new UpdateClientProfileUseCase(clientRepository),
+      inject: [CLIENT_REPOSITORY],
     },
   ],
   exports: ['IClientRepository'],
